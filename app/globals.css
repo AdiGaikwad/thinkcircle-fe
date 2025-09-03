@@ -22,7 +22,12 @@
   --destructive-foreground: #ffffff; /* White text on destructive */
   --border: #e5e7eb; /* Gray-200 for borders */
   --input: #f9fafb; /* Gray-50 for input backgrounds */
-  --ring: rgba(8, 145, 178, 0.5); /* Cyan-600 with transparency for focus rings */
+  --ring: rgba(
+    8,
+    145,
+    178,
+    0.5
+  ); /* Cyan-600 with transparency for focus rings */
   --chart-1: #0891b2; /* Cyan-600 */
   --chart-2: #d97706; /* Amber-600 */
   --chart-3: #4b5563; /* Gray-600 */
@@ -37,6 +42,30 @@
   --sidebar-accent-foreground: #ffffff; /* White sidebar accent text */
   --sidebar-border: #e5e7eb; /* Gray-200 sidebar border */
   --sidebar-ring: rgba(8, 145, 178, 0.5); /* Cyan-600 sidebar focus ring */
+
+  /* toast colors */
+  --toast-success: rgba(77, 218, 77, 0.4); /* pastel green with transparency */
+  --toast-success-foreground: #143414;
+
+  --toast-error: rgba(237, 18, 51, 0.4);
+  --toast-error-foreground: #f8eef0;
+
+  --toast-info: rgba(173, 216, 230, 0.6); /* pastel blue */
+  --toast-info-foreground: #1e2e3a;
+
+  --toast-border: rgba(255, 255, 255, 0.3); /* soft border */
+
+
+    --sonner-success-bg: var(--toast-success);
+  --sonner-success-fg: var(--toast-success-foreground);
+
+  --sonner-error-bg: var(--toast-error);
+  --sonner-error-fg: var(--toast-error-foreground);
+
+  --sonner-info-bg: var(--toast-info);
+  --sonner-info-fg: var(--toast-info-foreground);
+
+  --sonner-border: var(--toast-border);
 }
 
 .dark {
@@ -72,6 +101,190 @@
   --sidebar-accent-foreground: #111827; /* Gray-900 dark sidebar accent text */
   --sidebar-border: #374151; /* Gray-700 dark sidebar border */
   --sidebar-ring: rgba(6, 182, 212, 0.5); /* Cyan-500 dark sidebar focus ring */
+
+  /* Toaster colors */
+  --toast-success: rgba(77, 218, 77, 0.4); /* pastel green with transparency */
+  --toast-success-foreground: #143414;
+
+  --toast-error: rgba(237, 18, 51, 0.4);
+  --toast-error-foreground: #f8eef0;
+
+  --toast-info: rgba(67, 200, 244, 0.4);
+  --toast-info-foreground: #beedfc;
+
+  --toast-border: rgba(255, 255, 255, 0.2);
+
+
+    --sonner-success-bg: var(--toast-success);
+  --sonner-success-fg: var(--toast-success-foreground);
+
+  --sonner-error-bg: var(--toast-error);
+  --sonner-error-fg: var(--toast-error-foreground);
+
+  --sonner-info-bg: var(--toast-info);
+  --sonner-info-fg: var(--toast-info-foreground);
+
+  --sonner-border: var(--toast-border);
+}
+
+/* [data-sonner-toast] {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+[data-sonner-toast][data-type="success"] {
+  background-color: var(--toast-success) !important;
+  color: var(--toast-success-foreground) !important;
+  border: 1px solid var(--toast-border) !important;
+}
+
+[data-sonner-toast][data-type="error"] {
+  background-color: var(--toast-error) !important;
+  color: var(--toast-error-foreground) !important;
+  border: 1px solid var(--toast-border) !important;
+}
+
+[data-sonner-toast][data-type="info"],
+[data-sonner-toast][data-type="default"] {
+  background-color: var(--toast-info) !important;
+  color: var(--toast-info-foreground) !important;
+  border: 1px solid var(--toast-border) !important;
+} */
+
+/* Theme 1 — Aqua + Clementine: bright, energetic, academic */
+.theme-aqua-clementine {
+  --primary: #0ea5a5; /* Aqua (fresh teal-aqua) */
+  --primary-foreground: #ffffff;
+
+  --secondary: #ff7a1a; /* Clementine (vivid, juicy orange) */
+  /* Use dark text for AA contrast on lighter orange */
+  --secondary-foreground: #111827;
+
+  /* Keep accent aligned with secondary for cohesion */
+  --accent: #ff7a1a;
+  --accent-foreground: #111827;
+
+  --ring: rgba(14, 165, 165, 0.5); /* Aqua ring */
+  --chart-1: #0ea5a5;
+  --chart-2: #ff7a1a;
+  --chart-3: #4b5563;
+  --chart-4: #f3f4f6;
+  --chart-5: #111827;
+
+  --sidebar-accent: #ff7a1a;
+  --sidebar-accent-foreground: #111827;
+}
+
+.dark.theme-aqua-clementine {
+  /* Slightly lighter hues for vibrancy on dark surfaces */
+  --primary: #2dd4bf; /* Teal-400 */
+  --primary-foreground: #0b1220;
+
+  --secondary: #ff9a3c; /* Clementine light */
+  --secondary-foreground: #111827;
+
+  --accent: #ff9a3c;
+  --accent-foreground: #111827;
+
+  --ring: rgba(45, 212, 191, 0.5);
+  --chart-1: #2dd4bf;
+  --chart-2: #ff9a3c;
+  --chart-3: #9ca3af;
+  --chart-4: #374151;
+  --chart-5: #1f2937;
+
+  --sidebar-accent: #ff9a3c;
+  --sidebar-accent-foreground: #111827;
+}
+
+/* Theme 2 — Teal + Coral: calm primary with spirited accent */
+.theme-teal-coral {
+  --primary: #0f766e; /* Teal-700 (confident, readable) */
+  --primary-foreground: #ffffff;
+
+  --secondary: #ff6f61; /* Fresh coral */
+  /* Dark text for AA contrast on lighter coral */
+  --secondary-foreground: #111827;
+
+  --accent: #ff6f61;
+  --accent-foreground: #111827;
+
+  --ring: rgba(15, 118, 110, 0.5);
+  --chart-1: #0f766e;
+  --chart-2: #ff6f61;
+  --chart-3: #4b5563;
+  --chart-4: #f3f4f6;
+  --chart-5: #111827;
+
+  --sidebar-accent: #ff6f61;
+  --sidebar-accent-foreground: #111827;
+}
+
+.dark.theme-teal-coral {
+  --primary: #14b8a6; /* Teal-500 for glow on dark */
+  --primary-foreground: #0b1220;
+
+  --secondary: #ff8f7b; /* Coral light */
+  --secondary-foreground: #111827;
+
+  --accent: #ff8f7b;
+  --accent-foreground: #111827;
+
+  --ring: rgba(20, 184, 166, 0.5);
+  --chart-1: #14b8a6;
+  --chart-2: #ff8f7b;
+  --chart-3: #9ca3af;
+  --chart-4: #374151;
+  --chart-5: #1f2937;
+
+  --sidebar-accent: #ff8f7b;
+  --sidebar-accent-foreground: #111827;
+}
+
+/* Theme 3 — Cobalt + Apricot: crisp, modern, welcoming */
+.theme-cobalt-apricot {
+  --primary: #2563eb; /* Cobalt (blue-600) */
+  --primary-foreground: #ffffff;
+
+  --secondary: #f4a261; /* Apricot (fresh, soft orange) */
+  /* Dark text to maintain AA contrast */
+  --secondary-foreground: #111827;
+
+  --accent: #f4a261;
+  --accent-foreground: #111827;
+
+  --ring: rgba(37, 99, 235, 0.5);
+  --chart-1: #2563eb;
+  --chart-2: #f4a261;
+  --chart-3: #4b5563;
+  --chart-4: #f3f4f6;
+  --chart-5: #111827;
+
+  --sidebar-accent: #f4a261;
+  --sidebar-accent-foreground: #111827;
+}
+
+.dark.theme-cobalt-apricot {
+  --primary: #3b82f6; /* Blue-500 for dark backgrounds */
+  --primary-foreground: #0b1220;
+
+  --secondary: #f8b88b; /* Apricot light */
+  --secondary-foreground: #111827;
+
+  --accent: #f8b88b;
+  --accent-foreground: #111827;
+
+  --ring: rgba(59, 130, 246, 0.5);
+  --chart-1: #3b82f6;
+  --chart-2: #f8b88b;
+  --chart-3: #9ca3af;
+  --chart-4: #374151;
+  --chart-5: #1f2937;
+
+  --sidebar-accent: #f8b88b;
+  --sidebar-accent-foreground: #111827;
 }
 
 @theme inline {
@@ -111,6 +324,19 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+
+  /* Toaster colors */
+  --color-toast-success: var(--toast-success);
+  --color-toast-success-foreground: var(--toast-success-foreground);
+
+  --color-toast-error: var(--toast-error);
+  --color-toast-error-foreground: var(--toast-error-foreground);
+
+  --color-toast-info: var(--toast-info);
+  --color-toast-info-foreground: var(--toast-info-foreground);
+
+  --color-toast-border: var(--toast-border);
 }
 
 @layer base {

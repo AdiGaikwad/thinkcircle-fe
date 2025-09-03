@@ -1,8 +1,21 @@
-import { ProfileBuilder } from "@/components/profile-builder"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Brain, Users, MessageCircle, Sparkles, ArrowRight, BarChart3 } from "lucide-react"
-import Link from "next/link"
+import { ProfileBuilder } from "@/components/profile-builder";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Brain,
+  Users,
+  MessageCircle,
+  Sparkles,
+  ArrowRight,
+  BarChart3,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -16,22 +29,32 @@ export default function HomePage() {
           </div>
           <h1 className="text-4xl md:text-6xl font-bold text-foreground leading-tight">
             Welcome to{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">ThinkCircle</span>
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              ThinkCircle
+            </span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Transform your learning experience with AI-powered study groups that match your goals, schedule, and
-            learning style for maximum academic success.
+            Transform your learning experience with AI-powered study groups that
+            match your goals, schedule, and learning style for maximum academic
+            success.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-8">
             <Link href="/login">
-              <Button size="lg" className="flex items-center gap-2">
+              <Button
+                size="lg"
+                className="flex items-center gap-2 cursor-pointer"
+              >
                 <BarChart3 className="w-4 h-4" />
                 Sign In
               </Button>
             </Link>
             <Link href="/register">
-              <Button variant="outline" size="lg" className="flex items-center gap-2 bg-transparent">
+              <Button
+                variant="outline"
+                size="lg"
+                className="flex items-center cursor-pointer gap-2 bg-transparent hover:text-gray-200"
+              >
                 Create Account
                 <ArrowRight className="w-4 h-4" />
               </Button>
@@ -62,7 +85,8 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-center">
-                AI analyzes your learning style, subjects, and schedule to form optimal study groups
+                Platform analyzes your learning style, subjects, and schedule to form
+                optimal study groups
               </CardDescription>
             </CardContent>
           </Card>
@@ -76,7 +100,8 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-center">
-                Join diverse study groups that adapt to your progress and changing academic needs
+                Join diverse study groups that adapt to your progress and
+                changing academic needs
               </CardDescription>
             </CardContent>
           </Card>
@@ -90,7 +115,8 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-center">
-                Seamless group discussions with typing indicators and smart conversation summaries
+                Seamless group discussions with typing indicators and smart
+                conversation summaries
               </CardDescription>
             </CardContent>
           </Card>
@@ -104,7 +130,8 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
               <CardDescription className="text-center">
-                Get instant explanations, definitions, and study suggestions during group sessions
+                Get instant explanations, definitions, and study suggestions
+                during group sessions
               </CardDescription>
             </CardContent>
           </Card>
@@ -113,14 +140,17 @@ export default function HomePage() {
         {/* Profile Builder Section */}
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-4">Create Your Learning Profile</h2>
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Create Your Learning Profile
+            </h2>
             <p className="text-muted-foreground text-lg">
-              Tell us about your academic interests and learning preferences to get matched with the perfect study group
+              Tell us about your academic interests and learning preferences to
+              get matched with the perfect study group
             </p>
           </div>
           <ProfileBuilder />
         </div>
       </div>
     </div>
-  )
+  );
 }

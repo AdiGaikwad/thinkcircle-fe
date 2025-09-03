@@ -10,7 +10,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Sparkles, BookOpen, Target } from "lucide-react"
 import Link from "next/link"
-
+import axios from "axios"
+import domains from "../data/domains"
+import { toast } from "sonner"
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -62,12 +64,26 @@ export default function RegisterPage() {
       setIsLoading(false)
       return
     }
+    const body = {
+      firstname: e.target[0].value ?? e.target[0].value,
+      lastname: e.target[1].value ?? e.target[1].value,
+      email: e.target[2].value ?? e.target[2].value,
+      password: e.target[3].value ?? e.target[3].value
+    }
 
+    toast.error("Registered")
+
+    console.log(body)
+
+    // const data = await axios.post(`${domains.AUTH_HOST}/api/user/info/register`
+      
+    // )
+    
     // Simulate API call
     setTimeout(() => {
       setIsLoading(false)
       // Redirect to profile builder in real app
-      window.location.href = "/"
+      // window.location.href = "/"
     }, 2000)
   }
 
@@ -227,7 +243,7 @@ export default function RegisterPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-base font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up"
+                  className="w-full cursor-pointer h-12 text-base font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up"
                   style={{ animationDelay: "0.6s" }}
                   disabled={isLoading}
                 >
