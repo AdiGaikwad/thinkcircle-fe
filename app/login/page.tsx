@@ -1,45 +1,113 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Sparkles, Users, Brain } from "lucide-react"
-import Link from "next/link"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowRight,
+  Sparkles,
+  Users,
+  Brain,
+} from "lucide-react";
+import Link from "next/link";
+import axios from "axios";
+import domains from "../data/domains";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({})
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {}
+  );
+  
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setErrors({})
+    e.preventDefault();
+    setIsLoading(true);
+    setErrors({});
 
     // Simple validation
-    const newErrors: { email?: string; password?: string } = {}
-    if (!email) newErrors.email = "Email is required"
-    if (!password) newErrors.password = "Password is required"
+    const newErrors: { email?: string; password?: string } = {};
+    if (!email) newErrors.email = "Email is required";
+    if (!password) newErrors.password = "Password is required";
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      setIsLoading(false)
-      return
+      setErrors(newErrors);
+      setIsLoading(false);
+      return;
     }
 
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
-      // Redirect to dashboard in real app
-      // window.location.href = "/dashboard"
-    }, 1500)
-  }
+    const body = {
+      //@ts-ignore
+      email: e.target[0].value,
+      //@ts-ignore
+      password: e.target[1].value,
+    };
+
+    try {
+      const login = new Promise((resolve, reject) => {
+        axios
+          .post(`${domains.AUTH_HOST}/api/v1/user/login`, body, {
+            withCredentials: true,
+          })
+          .then((res) => {
+            if (res.data.success) {
+              localStorage.setItem("token", res.data.token);
+              resolve({
+                message: res.data.message
+                  ? res.data.message
+                  : "Logged in successfully !",
+              });
+              router.push("/dashboard")
+            }
+            if (!res.data.success) {
+              console.log(res.data);
+              reject({
+                message: res.data.message
+                  ? res.data.message
+                  : "Unable to login ",
+              });
+              // router.push("/login")
+            }
+          })
+          .catch((err) => {
+            console.log(err);
+            reject({
+              message: err.response.data.message
+                ? err.response.data.message
+                : "Unable to login. Please try again",
+            });
+          });
+      });
+      toast.promise(login, {
+        success: (data: any) => data.message,
+        error: (data: any) => data.message,
+      });
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -74,7 +142,8 @@ export default function LoginPage() {
             </h1>
 
             <p className="text-xl text-white/90 max-w-md leading-relaxed">
-              Continue your learning journey with AI-powered study groups tailored to your academic goals.
+              Continue your learning journey with AI-powered study groups
+              tailored to your academic goals.
             </p>
 
             <div className="flex items-center gap-8 mt-8">
@@ -100,7 +169,9 @@ export default function LoginPage() {
         <div className="w-full max-w-md animate-slide-in-right">
           <Card className="border-0 shadow-2xl bg-card/80 backdrop-blur-sm">
             <CardHeader className="text-center space-y-4 animate-fade-in-up">
-              <CardTitle className="text-3xl font-bold text-foreground">Sign In</CardTitle>
+              <CardTitle className="text-3xl font-bold text-foreground">
+                Sign In
+              </CardTitle>
               <CardDescription className="text-muted-foreground">
                 Enter your credentials to access your account
               </CardDescription>
@@ -108,8 +179,14 @@ export default function LoginPage() {
 
             <CardContent className="space-y-6">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-                  <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                <div
+                  className="space-y-2 animate-fade-in-up"
+                  style={{ animationDelay: "0.1s" }}
+                >
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Email Address
                   </Label>
                   <div className="relative">
@@ -121,15 +198,27 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={`pl-10 h-12 transition-all duration-300 focus:ring-2 focus:ring-primary/50 ${
-                        errors.email ? "border-destructive focus:ring-destructive/50" : ""
+                        errors.email
+                          ? "border-destructive focus:ring-destructive/50"
+                          : ""
                       }`}
                     />
                   </div>
-                  {errors.email && <p className="text-sm text-destructive animate-scale-in">{errors.email}</p>}
+                  {errors.email && (
+                    <p className="text-sm text-destructive animate-scale-in">
+                      {errors.email}
+                    </p>
+                  )}
                 </div>
 
-                <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-                  <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                <div
+                  className="space-y-2 animate-fade-in-up"
+                  style={{ animationDelay: "0.2s" }}
+                >
+                  <Label
+                    htmlFor="password"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Password
                   </Label>
                   <div className="relative">
@@ -141,7 +230,9 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className={`pl-10 pr-10 h-12 transition-all duration-300 focus:ring-2 focus:ring-primary/50 ${
-                        errors.password ? "border-destructive focus:ring-destructive/50" : ""
+                        errors.password
+                          ? "border-destructive focus:ring-destructive/50"
+                          : ""
                       }`}
                     />
                     <button
@@ -149,10 +240,18 @@ export default function LoginPage() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
                     </button>
                   </div>
-                  {errors.password && <p className="text-sm text-destructive animate-scale-in">{errors.password}</p>}
+                  {errors.password && (
+                    <p className="text-sm text-destructive animate-scale-in">
+                      {errors.password}
+                    </p>
+                  )}
                 </div>
 
                 <div
@@ -169,7 +268,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-base font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up"
+                  className="w-full h-12 text-base font-medium cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up"
                   style={{ animationDelay: "0.4s" }}
                   disabled={isLoading}
                 >
@@ -179,7 +278,7 @@ export default function LoginPage() {
                       Signing In...
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 ">
                       Sign In
                       <ArrowRight className="w-4 h-4" />
                     </div>
@@ -187,10 +286,16 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <div className="text-center animate-fade-in-up" style={{ animationDelay: "0.5s" }}>
+              <div
+                className="text-center animate-fade-in-up"
+                style={{ animationDelay: "0.5s" }}
+              >
                 <p className="text-sm text-muted-foreground">
                   Don't have an account?{" "}
-                  <Link href="/register" className="text-primary hover:text-primary/80 transition-colors font-medium">
+                  <Link
+                    href="/register"
+                    className="text-primary hover:text-primary/80 transition-colors font-medium"
+                  >
                     Create one here
                   </Link>
                 </p>
@@ -200,5 +305,5 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
