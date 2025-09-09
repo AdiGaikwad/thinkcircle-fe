@@ -115,7 +115,7 @@ export default function RegisterPage() {
 
         if(login.data.success){
           localStorage.setItem("token", login.data.token)
-          router.push("/dashboard")
+          router.push("/onboarding")
         }
         if(!login.data.success){
           router.push("/login")

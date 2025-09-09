@@ -264,6 +264,15 @@
 
   --sidebar-accent: #f4a261;
   --sidebar-accent-foreground: #111827;
+
+   --sidebar: #1f2937; /* Gray-800 dark sidebar */
+  --sidebar-foreground: #f9fafb; /* Gray-50 dark sidebar text */
+  --sidebar-primary: #374151; /* Gray-700 dark sidebar primary */
+  --sidebar-primary-foreground: #f9fafb; /* Gray-50 dark sidebar primary text */
+  --sidebar-accent: #f8b88b; /* Apricot light */
+  --sidebar-accent-foreground: #111827; /* Gray-900 dark sidebar accent text */
+  --sidebar-border: #374151; /* Gray-700 dark sidebar border */
+  --sidebar-ring: rgba(59, 130, 246, 0.5); /* Cyan-500 dark sidebar focus ring */
 }
 
 .dark.theme-cobalt-apricot {
@@ -417,6 +426,53 @@
     }
   }
 
+  /* Adding onboarding-specific animations */
+  @keyframes slideIn {
+    0% {
+      transform: translateX(30px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes bounceIn {
+    0% {
+      transform: scale(0.3);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200px 0;
+    }
+    100% {
+      background-position: calc(200px + 100%) 0;
+    }
+  }
+
   .animate-slide-in-left {
     animation: slideInFromLeft 0.6s ease-out;
   }
@@ -435,5 +491,47 @@
 
   .animate-pulse-glow {
     animation: pulse-glow 2s infinite;
+  }
+
+  /* Adding onboarding animation classes */
+  .animate-slide-in {
+    animation: slideIn 0.5s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.6s ease-out;
+  }
+
+  .animate-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    background-size: 200px 100%;
+    animation: shimmer 2s infinite;
+  }
+
+  /* Adding hover and interaction effects for onboarding */
+  .hover-lift {
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  }
+
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .selection-glow {
+    transition: all 0.3s ease-out;
+  }
+
+  .selection-glow.selected {
+    box-shadow: 0 0 0 2px var(--primary), 0 0 20px rgba(8, 145, 178, 0.3);
+  }
+
+  /* Adding progress bar animation */
+  .progress-fill {
+    transition: width 0.5s ease-out;
   }
 }
