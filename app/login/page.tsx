@@ -28,6 +28,7 @@ import axios from "axios";
 import domains from "../data/domains";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -37,9 +38,9 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {}
   );
-  
-  const router = useRouter()
 
+  const router = useRouter();
+  const { setUser } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -77,7 +78,8 @@ export default function LoginPage() {
                   ? res.data.message
                   : "Logged in successfully !",
               });
-              router.push("/dashboard")
+              if (res.data.user) setUser(res.data.user);
+              router.push("/dashboard");
             }
             if (!res.data.success) {
               console.log(res.data);
