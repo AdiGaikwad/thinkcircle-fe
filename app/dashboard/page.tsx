@@ -1,16 +1,35 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Calendar, Users, Clock, TrendingUp, CheckCircle, Brain, Target, BarChart3, Bell, Plus } from "lucide-react"
-import { StudyGroupCard } from "@/components/study-group-card"
-import { SessionSummary } from "@/components/session-summary"
-import { ActionItems } from "@/components/action-items"
-import { StudyStats } from "@/components/study-stats"
-import Link from "next/link"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Calendar,
+  Users,
+  Clock,
+  TrendingUp,
+  CheckCircle,
+  Brain,
+  Target,
+  BarChart3,
+  Bell,
+  Plus,
+} from "lucide-react";
+import { StudyGroupCard } from "@/components/study-group-card";
+import { SessionSummary } from "@/components/session-summary";
+import { ActionItems } from "@/components/action-items";
+import { StudyStats } from "@/components/study-stats";
+import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 // Mock data for dashboard
 const studyGroups = [
@@ -47,7 +66,7 @@ const studyGroups = [
     status: "active" as const,
     unreadMessages: 7,
   },
-]
+];
 
 const recentSummaries = [
   {
@@ -56,7 +75,11 @@ const recentSummaries = [
     date: "2 hours ago",
     duration: "45 minutes",
     participants: ["Sarah Chen", "Mike Rodriguez", "You"],
-    keyTopics: ["Integration by parts", "Substitution method", "Practice problems"],
+    keyTopics: [
+      "Integration by parts",
+      "Substitution method",
+      "Practice problems",
+    ],
     summary:
       "The group focused on integration techniques, with particular emphasis on integration by parts. Mike asked for clarification on the substitution method, which led to a productive discussion with examples. The AI assistant provided step-by-step explanations that helped clarify the concepts.",
     actionItems: [
@@ -81,9 +104,10 @@ const recentSummaries = [
       "Research advanced tree balancing techniques",
       "Prepare for technical interview practice session",
     ],
-    aiInsights: "Excellent problem-solving collaboration. The group is ready for more advanced data structure topics.",
+    aiInsights:
+      "Excellent problem-solving collaboration. The group is ready for more advanced data structure topics.",
   },
-]
+];
 
 const upcomingSessions = [
   {
@@ -113,7 +137,7 @@ const upcomingSessions = [
     participants: 4,
     isToday: false,
   },
-]
+];
 
 const actionItems = [
   {
@@ -148,14 +172,30 @@ const actionItems = [
     priority: "medium" as const,
     completed: false,
   },
-]
+];
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("overview")
+  const [activeTab, setActiveTab] = useState("overview");
+  const router = useRouter();
+  const totalUnreadMessages = studyGroups.reduce(
+    (sum, group) => sum + group.unreadMessages,
+    0
+  );
+  const todaySessions = upcomingSessions.filter(
+    (session) => session.isToday
+  ).length;
+  const pendingActions = actionItems.filter((item) => !item.completed).length;
 
-  const totalUnreadMessages = studyGroups.reduce((sum, group) => sum + group.unreadMessages, 0)
-  const todaySessions = upcomingSessions.filter((session) => session.isToday).length
-  const pendingActions = actionItems.filter((item) => !item.completed).length
+  const { user, loading } = useAuth();
+
+  useEffect(() => {
+    if (user && !loading) {
+      if (!user.onboarding) {
+        router.push("/onboarding");
+      }
+      // if(user)
+    }
+  }, [user, loading]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
@@ -163,11 +203,19 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Study Dashboard</h1>
-            <p className="text-muted-foreground">Track your progress and manage your study groups</p>
+            <h1 className="text-3xl font-bold text-foreground">
+              Study Dashboard
+            </h1>
+            <p className="text-muted-foreground">
+              Track your progress and manage your study groups
+            </p>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" className="flex items-center gap-2 bg-transparent">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 bg-transparent"
+            >
               <Bell className="w-4 h-4" />
               {totalUnreadMessages > 0 && (
                 <Badge variant="destructive" className="h-5 w-5 p-0 text-xs">
@@ -208,7 +256,9 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{todaySessions}</p>
-                  <p className="text-sm text-muted-foreground">Sessions Today</p>
+                  <p className="text-sm text-muted-foreground">
+                    Sessions Today
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -244,7 +294,11 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-6"
+        >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="w-4 h-4" />
@@ -272,22 +326,30 @@ export default function DashboardPage() {
                   <Calendar className="w-5 h-5" />
                   Upcoming Sessions
                 </CardTitle>
-                <CardDescription>Your scheduled study sessions for the next few days</CardDescription>
+                <CardDescription>
+                  Your scheduled study sessions for the next few days
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {upcomingSessions.map((session) => (
                   <div
                     key={session.id}
                     className={`flex items-center justify-between p-4 rounded-lg border ${
-                      session.isToday ? "bg-accent/5 border-accent/20" : "bg-muted/30 border-border"
+                      session.isToday
+                        ? "bg-accent/5 border-accent/20"
+                        : "bg-muted/30 border-border"
                     }`}
                   >
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <h4 className="font-medium">{session.groupName}</h4>
-                        {session.isToday && <Badge variant="secondary">Today</Badge>}
+                        {session.isToday && (
+                          <Badge variant="secondary">Today</Badge>
+                        )}
                       </div>
-                      <p className="text-sm text-muted-foreground">{session.topic}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {session.topic}
+                      </p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
@@ -336,5 +398,5 @@ export default function DashboardPage() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }
