@@ -18,6 +18,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [authToken, setToken] = useState("");
 
   const router = useRouter();
   const pathname = usePathname();
@@ -26,7 +27,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const token = localStorage.getItem("token");
+        const token: any = localStorage.getItem("token");
+        setToken(token);
         const response = await axios.get(
           `${domains.AUTH_HOST}/api/v1/user/me`,
           {
@@ -57,6 +59,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!user && !publicPaths.includes(pathname)) {
         router.replace("/login");
       }
+      if(!loading && user && !user.onboarding){
+          router.push("/onboarding")
+      }
       if (user && publicPaths.includes(pathname)) {
         router.replace("/dashboard");
       }
@@ -64,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [user, loading, pathname]);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading }}>
+    <AuthContext.Provider value={{ user, setUser, loading, authToken, setToken }}>
       {!loading && children}
     </AuthContext.Provider>
   );

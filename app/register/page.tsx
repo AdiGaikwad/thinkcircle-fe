@@ -30,6 +30,7 @@ import axios from "axios";
 import domains from "../data/domains";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -43,9 +44,8 @@ export default function RegisterPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const router = useRouter()
-
+  const { setUser, setToken } = useAuth();
+  const router = useRouter();
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -111,17 +111,22 @@ export default function RegisterPage() {
             : "User registered successfully"
         );
 
-        const login = await axios.post(`${domains.AUTH_HOST}/api/v1/user/login`, body, {withCredentials: true})
+        const login = await axios.post(
+          `${domains.AUTH_HOST}/api/v1/user/login`,
+          body,
+          { withCredentials: true }
+        );
 
-        if(login.data.success){
-          localStorage.setItem("token", login.data.token)
-          router.push("/onboarding")
+        if (login.data.success && login.data.user && login.data.token) {
+          setUser(login.data.user);
+          setToken(login.data.token);
+          localStorage.setItem("token", login.data.token);
+          router.push("/onboarding");
         }
-        if(!login.data.success){
-          router.push("/login")
+        if (!login.data.success) {
+          router.push("/login");
         }
       }
-
     } catch (err: any) {
       toast.error(
         err.response && err.response.data.message
@@ -129,8 +134,8 @@ export default function RegisterPage() {
           : "Unable to register user"
       );
       console.log(err);
-    } finally{
-      setIsLoading(false)
+    } finally {
+      setIsLoading(false);
     }
 
     // Simulate API call
