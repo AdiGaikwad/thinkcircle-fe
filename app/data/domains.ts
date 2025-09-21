@@ -8,7 +8,7 @@ interface Domains {
 }
 
 const domains: Domains = {
-    AUTH_HOST: "http://localhost:5000",
+    AUTH_HOST: "http://localhost:3500",
     API_HOST: ""
 
 }

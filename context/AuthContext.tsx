@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const router = useRouter();
   const pathname = usePathname();
-  const publicPaths = ["/login", "/signup"];
+  const publicPaths = ["/login", "/register", "/"];
 
   useEffect(() => {
     const fetchUser = async () => {

@@ -19,6 +19,9 @@ import {
 import { useRouter } from "next/navigation";
 import domains from "../data/domains";
 import { useAuth } from "@/context/AuthContext";
+import ConfettiExplosion from "react-confetti-explosion";
+import { toast } from "sonner";
+import axios from "axios";
 
 const subjects = [
   "Mathematics",
@@ -131,43 +134,38 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: any) => {
     setIsSubmitting(true);
+    e.preventDefault();
     const token = localStorage.getItem("token");
     try {
-      const response = await fetch(
+      const response = await axios.post(
         `${domains.AUTH_HOST}/api/v1/profile/create_profile`,
+        formData,
         {
-          method: "POST",
-          //@ts-ignore
           headers: {
             "Content-Type": "application/json",
             Authorization: token,
           },
-          body: JSON.stringify(formData),
         }
       );
 
-      if (response.ok) {
-        const data = response.json();
-        data
-          .then((a) => {
-            if (a.user) {
-              setUser(a.user);
-            }
-          })
-          .catch((err) => {
-            console.log(err);
-          });
-        // Success animation
-        setTimeout(() => {
+      if (response.data && response.data.success) {
+        if (response.data.user) {
           router.push("/dashboard");
-        }, 2000);
+          setUser(response.data.user);
+        }
       } else {
-        throw new Error("Failed to save profile");
+        toast.error(response?.data?.message || "Unable to save profile");
       }
-    } catch (error) {
-      console.error("Onboarding error:", error);
+    } catch (error: any) {
+      const msg = error?.response?.data?.message || "Unable to save profile";
+      setTimeout(() => {
+        toast.error("Error", msg);
+        setIsSubmitting(false);
+      }, 500);
+      console.error("Onboarding error:", error.response.data.message);
+    } finally {
       setIsSubmitting(false);
     }
   };
