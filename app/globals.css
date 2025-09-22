@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+body{
+  margin-top: 70px;
+}
+
 :root {
   --background: #ffffff; /* Clean white background */
   --foreground: #4b5563; /* Gray-600 for primary text */

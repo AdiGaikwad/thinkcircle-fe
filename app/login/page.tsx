@@ -65,6 +65,8 @@ export default function LoginPage() {
     };
 
     try {
+      setIsLoading(true);
+
       const login = new Promise((resolve, reject) => {
         axios
           .post(`${domains.AUTH_HOST}/api/v1/user/login`, body, {
@@ -270,7 +272,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-base font-medium cursor-pointer transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up"
+                  className="w-full h-12 text-base cursor-pointer font-medium transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] animate-fade-in-up"
                   style={{ animationDelay: "0.4s" }}
                   disabled={isLoading}
                 >
@@ -280,7 +282,7 @@ export default function LoginPage() {
                       Signing In...
                     </div>
                   ) : (
-                    <div className="flex items-center gap-2 ">
+                    <div className="flex items-center gap-2">
                       Sign In
                       <ArrowRight className="w-4 h-4" />
                     </div>
