@@ -35,6 +35,9 @@ import {
   UserCheck,
   Eye,
   UserX,
+  CheckCheck,
+  Check,
+  User,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -102,7 +105,7 @@ interface JoinRequest {
   profile: {
     id: string;
     goals: string;
-    availability: string[]
+    availability: string[];
     user: {
       id: string;
       firstname: string;
@@ -111,7 +114,7 @@ interface JoinRequest {
       profilepic?: string;
     };
     subjectFocus?: string;
-    subjects: string[],
+    subjects: string[];
     studyGoals?: string;
     preferredStudyTime?: string;
     academicLevel?: string;
@@ -207,12 +210,15 @@ export default function DashboardPage() {
   const fetchJoinRequests = async (groupId: string) => {
     try {
       setLoadingRequests(true);
-      const response = await fetch(domains.AUTH_HOST + `/api/v1/group/join-request/${groupId}`, {
-        headers: {
-          Authorization: `${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        domains.AUTH_HOST + `/api/v1/group/join-request/${groupId}`,
+        {
+          headers: {
+            Authorization: `${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -241,7 +247,8 @@ export default function DashboardPage() {
       setProcessingRequests((prev) => new Set(prev).add(requestId));
 
       const response = await fetch(
-        domains.AUTH_HOST + `/api/v1/group/${groupId}/join-request/${requestId}`,
+        domains.AUTH_HOST +
+          `/api/v1/group/${groupId}/join-request/${requestId}`,
         {
           method: "POST",
           headers: {
@@ -430,6 +437,48 @@ export default function DashboardPage() {
     }
   };
 
+  const markAsRead = async (notificationId: string) => {
+    try {
+      await fetch(`/api/notifications/${notificationId}/mark-read`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+      );
+      toast.success("Success", {
+        description: "Notification marked as read",
+      });
+    } catch (error) {
+      toast.error("Error", {
+        description: "Failed to mark notification as read",
+      });
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      await fetch("/api/notifications/mark-all-read", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+      toast.success("Success", {
+        description: "All notifications marked as read",
+      });
+    } catch (error) {
+      toast.error("Error", {
+        description: "Failed to mark all notifications as read",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center">
@@ -448,7 +497,9 @@ export default function DashboardPage() {
     0
   );
   // console.log(groups)
-  const adminGroups = groups.filter((group:any) => group.group.adminId === user?.id);
+  const adminGroups = groups.filter(
+    (group: any) => group.group.adminId === user?.id
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
@@ -484,6 +535,15 @@ export default function DashboardPage() {
                 </Badge>
               )}
             </Button>
+            <Link href={"/profile"}>
+              <Button
+                variant="outline"
+                className="flex items-center gap-2 bg-transparent"
+              >
+                <User className="w-4 h-4" />
+                Profile
+              </Button>
+            </Link>
 
             <Dialog open={createGroupOpen} onOpenChange={setCreateGroupOpen}>
               <DialogTrigger asChild>
@@ -681,33 +741,42 @@ export default function DashboardPage() {
           className="space-y-6"
         >
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+            <TabsTrigger
+              value="overview"
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <BarChart3 className="w-4 h-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="groups" className="flex items-center gap-2">
+            <TabsTrigger
+              value="groups"
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <Users className="w-4 h-4" />
               Study Groups
             </TabsTrigger>
             <TabsTrigger
               value="join-requests"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
             >
               <UserCheck className="w-4 h-4" />
               Join Requests
-              {adminGroups.length > 0 && (
+              {/* {adminGroups.length > 0 && (
                 <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs">
                   {adminGroups.length}
                 </Badge>
-              )}
+              )} */}
             </TabsTrigger>
-            <TabsTrigger value="summaries" className="flex items-center gap-2">
+            <TabsTrigger
+              value="summaries"
+              className="flex items-center gap-2 cursor-pointer"
+            >
               <Brain className="w-4 h-4" />
               AI Summaries
             </TabsTrigger>
             <TabsTrigger
               value="notifications"
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 cursor-pointer"
             >
               <Bell className="w-4 h-4" />
               Notifications
@@ -904,6 +973,20 @@ export default function DashboardPage() {
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Notifications</h2>
+              {notifications.some((n) => !n.read) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={markAllAsRead}
+                  className="flex items-center gap-2 bg-transparent"
+                >
+                  <CheckCheck className="w-4 h-4" />
+                  Mark All as Read
+                </Button>
+              )}
+            </div>
             <div className="space-y-4">
               {notifications.map((notification) => (
                 <Card
@@ -916,7 +999,7 @@ export default function DashboardPage() {
                 >
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between">
-                      <div className="space-y-1">
+                      <div className="space-y-1 flex-1">
                         <div className="flex items-center gap-2">
                           <Badge
                             variant={
@@ -939,6 +1022,16 @@ export default function DashboardPage() {
                           {new Date(notification.createdAt).toLocaleString()}
                         </p>
                       </div>
+                      {!notification.read && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => markAsRead(notification.id)}
+                          className="ml-2"
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -968,13 +1061,19 @@ export default function DashboardPage() {
                     <CardTitle>Manage Join Requests</CardTitle>
                     <div className="space-y-2">
                       <Label htmlFor="group-select">Select Group</Label>
-                      <Select value={selectedGroupForRequests} onValueChange={setSelectedGroupForRequests}>
+                      <Select
+                        value={selectedGroupForRequests}
+                        onValueChange={setSelectedGroupForRequests}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Choose a group to manage requests" />
                         </SelectTrigger>
                         <SelectContent>
-                          {adminGroups.map((group:any) => (
-                            <SelectItem key={group.group.id} value={group.group.id}>
+                          {adminGroups.map((group: any) => (
+                            <SelectItem
+                              key={group.group.id}
+                              value={group.group.id}
+                            >
                               {group.group.name} ({group.group.subjectFocus})
                             </SelectItem>
                           ))}
@@ -990,23 +1089,35 @@ export default function DashboardPage() {
                       <CardTitle className="flex items-center gap-2">
                         <UserCheck className="w-5 h-5" />
                         Pending Join Requests
-                        {loadingRequests && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {loadingRequests && (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        )}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       {loadingRequests ? (
                         <div className="text-center py-8">
                           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-                          <p className="text-muted-foreground">Loading join requests...</p>
+                          <p className="text-muted-foreground">
+                            Loading join requests...
+                          </p>
                         </div>
                       ) : joinRequests.length > 0 ? (
                         <div className="space-y-4">
                           {joinRequests.map((request) => (
-                            <Card key={request.id} className="p-4 border border-border/50">
+                            <Card
+                              key={request.id}
+                              className="p-4 border border-border/50"
+                            >
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                   <Avatar className="h-12 w-12">
-                                    <AvatarImage src={request?.profile?.user?.profilepic || "/placeholder.svg"} />
+                                    <AvatarImage
+                                      src={
+                                        request?.profile?.user?.profilepic ||
+                                        "/placeholder.svg"
+                                      }
+                                    />
                                     <AvatarFallback>
                                       {request?.profile?.user?.firstname[0]}
                                       {request?.profile?.user?.lastname[0]}
@@ -1014,24 +1125,44 @@ export default function DashboardPage() {
                                   </Avatar>
                                   <div>
                                     <h4 className="font-medium">
-                                      {request?.profile?.user?.firstname} {request?.profile?.user?.lastname}
+                                      {request?.profile?.user?.firstname}{" "}
+                                      {request?.profile?.user?.lastname}
                                     </h4>
-                                    <p className="text-sm text-muted-foreground">{request?.profile?.user?.email}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {request?.profile?.user?.email}
+                                    </p>
                                     <p className="text-xs text-muted-foreground">
-                                      Requested {new Date(request.createdAt).toLocaleDateString()}
+                                      Requested{" "}
+                                      {new Date(
+                                        request.createdAt
+                                      ).toLocaleDateString()}
                                     </p>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                  <Button variant="outline" size="sm" onClick={() => setViewProfileDialog(request)}>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setViewProfileDialog(request)
+                                    }
+                                  >
                                     <Eye className="w-4 h-4 mr-2" />
                                     View Profile
                                   </Button>
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => handleJoinRequest(selectedGroupForRequests, request.id, "REJECTED")}
-                                    disabled={processingRequests.has(request.id)}
+                                    onClick={() =>
+                                      handleJoinRequest(
+                                        selectedGroupForRequests,
+                                        request.id,
+                                        "REJECTED"
+                                      )
+                                    }
+                                    disabled={processingRequests.has(
+                                      request.id
+                                    )}
                                     className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
                                   >
                                     {processingRequests.has(request.id) ? (
@@ -1043,8 +1174,16 @@ export default function DashboardPage() {
                                   </Button>
                                   <Button
                                     size="sm"
-                                    onClick={() => handleJoinRequest(selectedGroupForRequests, request.id, "ACCEPTED")}
-                                    disabled={processingRequests.has(request.id)}
+                                    onClick={() =>
+                                      handleJoinRequest(
+                                        selectedGroupForRequests,
+                                        request.id,
+                                        "ACCEPTED"
+                                      )
+                                    }
+                                    disabled={processingRequests.has(
+                                      request.id
+                                    )}
                                     className="bg-green-600 hover:bg-green-700 text-white"
                                   >
                                     {processingRequests.has(request.id) ? (
@@ -1062,8 +1201,12 @@ export default function DashboardPage() {
                       ) : (
                         <div className="text-center py-8">
                           <UserCheck className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                          <h3 className="text-lg font-semibold mb-2">No Pending Requests</h3>
-                          <p className="text-muted-foreground">There are no pending join requests for this group.</p>
+                          <h3 className="text-lg font-semibold mb-2">
+                            No Pending Requests
+                          </h3>
+                          <p className="text-muted-foreground">
+                            There are no pending join requests for this group.
+                          </p>
                         </div>
                       )}
                     </CardContent>
@@ -1074,7 +1217,9 @@ export default function DashboardPage() {
               <Card className="backdrop-blur-sm bg-card/80 border-border/50">
                 <CardContent className="p-12 text-center">
                   <UserCheck className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No Admin Groups</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    No Admin Groups
+                  </h3>
                   <p className="text-muted-foreground mb-6">
                     You need to be an admin of a group to manage join requests.
                   </p>
@@ -1088,17 +1233,27 @@ export default function DashboardPage() {
           </TabsContent>
         </Tabs>
 
-        <Dialog open={!!viewProfileDialog} onOpenChange={() => setViewProfileDialog(null)}>
+        <Dialog
+          open={!!viewProfileDialog}
+          onOpenChange={() => setViewProfileDialog(null)}
+        >
           <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>User Profile</DialogTitle>
-              <DialogDescription>View the complete profile of the user requesting to join</DialogDescription>
+              <DialogDescription>
+                View the complete profile of the user requesting to join
+              </DialogDescription>
             </DialogHeader>
             {viewProfileDialog && (
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <Avatar className="h-16 w-16">
-                    <AvatarImage src={viewProfileDialog?.profile?.user?.profilepic || "/placeholder.svg"} />
+                    <AvatarImage
+                      src={
+                        viewProfileDialog?.profile?.user?.profilepic ||
+                        "/placeholder.svg"
+                      }
+                    />
                     <AvatarFallback className="text-lg">
                       {viewProfileDialog?.profile?.user?.firstname[0]}
                       {viewProfileDialog?.profile?.user?.lastname[0]}
@@ -1106,9 +1261,12 @@ export default function DashboardPage() {
                   </Avatar>
                   <div>
                     <h3 className="text-lg font-semibold">
-                      {viewProfileDialog?.profile?.user?.firstname} {viewProfileDialog?.profile?.user?.lastname}
+                      {viewProfileDialog?.profile?.user?.firstname}{" "}
+                      {viewProfileDialog?.profile?.user?.lastname}
                     </h3>
-                    <p className="text-sm text-muted-foreground">{viewProfileDialog?.profile?.user?.email}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {viewProfileDialog?.profile?.user?.email}
+                    </p>
                   </div>
                 </div>
 
@@ -1116,8 +1274,8 @@ export default function DashboardPage() {
                   <div>
                     <Label className="text-sm font-medium">Subject Focus</Label>
                     <p className="text-sm text-muted-foreground">
-
-                      {viewProfileDialog?.profile?.subjects.join(", ") || "Not specified"}
+                      {viewProfileDialog?.profile?.subjects.join(", ") ||
+                        "Not specified"}
                     </p>
                   </div>
                   <div>
@@ -1127,9 +1285,12 @@ export default function DashboardPage() {
                     </p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium">Preferred Study Time</Label>
+                    <Label className="text-sm font-medium">
+                      Preferred Study Time
+                    </Label>
                     <p className="text-sm text-muted-foreground">
-                      {viewProfileDialog?.profile?.availability.join(", ") || "Not specified"}
+                      {viewProfileDialog?.profile?.availability.join(", ") ||
+                        "Not specified"}
                     </p>
                   </div>
                   {/* <div>
@@ -1141,7 +1302,9 @@ export default function DashboardPage() {
                   <div>
                     <Label className="text-sm font-medium">Request Date</Label>
                     <p className="text-sm text-muted-foreground">
-                      {new Date(viewProfileDialog?.createdAt).toLocaleDateString()}
+                      {new Date(
+                        viewProfileDialog?.createdAt
+                      ).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
@@ -1151,8 +1314,12 @@ export default function DashboardPage() {
                     variant="outline"
                     className="flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950 bg-transparent"
                     onClick={() => {
-                      handleJoinRequest(selectedGroupForRequests, viewProfileDialog.id, "REJECTED")
-                      setViewProfileDialog(null)
+                      handleJoinRequest(
+                        selectedGroupForRequests,
+                        viewProfileDialog.id,
+                        "REJECTED"
+                      );
+                      setViewProfileDialog(null);
                     }}
                     disabled={processingRequests.has(viewProfileDialog.id)}
                   >
@@ -1166,8 +1333,12 @@ export default function DashboardPage() {
                   <Button
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white"
                     onClick={() => {
-                      handleJoinRequest(selectedGroupForRequests, viewProfileDialog.id, "ACCEPTED")
-                      setViewProfileDialog(null)
+                      handleJoinRequest(
+                        selectedGroupForRequests,
+                        viewProfileDialog.id,
+                        "ACCEPTED"
+                      );
+                      setViewProfileDialog(null);
                     }}
                     disabled={processingRequests.has(viewProfileDialog.id)}
                   >
