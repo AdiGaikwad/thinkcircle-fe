@@ -147,7 +147,7 @@ export default function DashboardPage() {
 
       if (notificationsResponse.ok) {
         const notificationsData = await notificationsResponse.json();
-        setNotifications(notificationsData.notifications || []);
+        setNotifications(notificationsData.notification || []);
       }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
@@ -265,17 +265,20 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2  justify-between mb-8 gap-6 ">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
               Study Dashboard
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground ">
               Welcome back, {user?.firstname}! Manage your study groups and
               track progress
             </p>
           </div>
-          <div className="flex items-center gap-3">
+
+
+
+          <div className="flex items-center gap-3 justify-end">
             <Button
               variant="outline"
               size="sm"
@@ -509,19 +512,19 @@ export default function DashboardPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {groups.slice(0, 3).map((group) => (
+                  {groups.slice(0, 3).map((group:any) => (
                     <div
                       key={group.id}
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border"
                     >
                       <div>
-                        <h4 className="font-medium">{group.name}</h4>
+                        <h4 className="font-medium">{group.group.name}</h4>
                         <p className="text-sm text-muted-foreground">
                           {group.subjectFocus}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {group._count?.members || 0} members • Created{" "}
-                          {new Date(group.createdAt).toLocaleDateString()}
+                          {new Date(group.group.createdAt).toLocaleDateString()}
                         </p>
                       </div>
                       <Link href={`/chat/${group.id}`}>
