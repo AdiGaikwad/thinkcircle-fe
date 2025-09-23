@@ -44,6 +44,7 @@ import { useAuth } from "@/context/AuthContext";
 import domains from "../data/domains";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import ThemeSelector from "@/components/ThemeSelector";
 
 interface Group {
   id: string;
@@ -502,7 +503,10 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
+    <div className="min-h-screen bg-gradient-to-bl from-background/0 via-background/20 to-background/0">
+      <div className="bg-gradient-to-r from-primary/50 via-secondary/30 to-primary animate-pulse  animation-duration-[3500ms] right-0 absolute w-[300px] h-[300px] blur-3xl -z-10 "></div>
+      <div className="bg-gradient-to-r from-sidebar-accent-foreground/50 via-sidebar-accent/50 to-sidebar-ring animate-pulse  animation-duration-[5000ms] bottom-0 left-0 absolute w-[300px] h-[300px] blur-3xl -z-10 "></div>
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="grid grid-cols-1 sm:grid-cols-2  justify-between mb-8 gap-6 ">
@@ -671,6 +675,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        <ThemeSelector />
+        <br />
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="backdrop-blur-sm bg-card/80 border-border/50">
