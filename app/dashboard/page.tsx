@@ -440,11 +440,17 @@ export default function DashboardPage() {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await fetch(`/api/notifications/${notificationId}/mark-read`, {
+      const body = {
+        readAll: false,
+        id: notificationId,
+      };
+      await fetch(domains.AUTH_HOST + "/api/v1/notification/read", {
         method: "POST",
         headers: {
+          Authorization: `${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(body),
       });
 
       setNotifications((prev) =>
@@ -462,11 +468,16 @@ export default function DashboardPage() {
 
   const markAllAsRead = async () => {
     try {
-      await fetch("/api/notifications/mark-all-read", {
+      const body = {
+        readAll: true,
+      };
+      await fetch(domains.AUTH_HOST + "/api/v1/notification/read", {
         method: "POST",
         headers: {
+          Authorization: `${token}`,
           "Content-Type": "application/json",
         },
+        body: JSON.stringify(body),
       });
 
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
@@ -474,6 +485,7 @@ export default function DashboardPage() {
         description: "All notifications marked as read",
       });
     } catch (error) {
+      console.log(error);
       toast.error("Error", {
         description: "Failed to mark all notifications as read",
       });
@@ -811,11 +823,11 @@ export default function DashboardPage() {
                           {group.subjectFocus}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {group._count?.members || 0} members • Created{" "}
+                          {group?.group?.memberCount || 0} members • Created{" "}
                           {new Date(group.group.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <Link href={`/chat/${group.id}`}>
+                      <Link href={`/chat/${group.groupId}`}>
                         <Button variant="outline" size="sm">
                           Open Chat
                         </Button>
@@ -833,9 +845,21 @@ export default function DashboardPage() {
 
               <Card className="backdrop-blur-sm bg-card/80 border-border/50">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bell className="w-5 h-5" />
-                    Recent Notifications
+                  <CardTitle className="flex justify-between items-center gap-2">
+                    <div className="flex gap-2">
+                      <Bell className="w-5 h-5" />
+                      Recent Notifications
+                    </div>
+
+                    {notifications.find((n) => n.read != true) && (
+                      <Button
+                        variant={"outline"}
+                        onClick={() => markAllAsRead()}
+                        title="Mark all notifications as read"
+                      >
+                        Read All
+                      </Button>
+                    )}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -844,23 +868,40 @@ export default function DashboardPage() {
                       key={notification.id}
                       className="p-3 rounded-lg bg-muted/30 border border-border"
                     >
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge
-                          variant={
-                            notification.type === "JOIN_REQUEST"
-                              ? "default"
-                              : "secondary"
-                          }
-                          className="text-xs"
-                        >
-                          {notification.type.replace("_", " ")}
-                        </Badge>
-                        {!notification.read && (
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <div className="">
                           <Badge
-                            variant="destructive"
-                            className="h-2 w-2 p-0"
-                          ></Badge>
-                        )}
+                            variant={
+                              notification.type === "JOIN_REQUEST"
+                                ? "default"
+                                : "secondary"
+                            }
+                            className="text-xs"
+                          >
+                            {notification.type.replace("_", " ")}
+                          </Badge>
+                          {!notification.read && (
+                            <Badge
+                              variant="destructive"
+                              className="h-2 w-2 p-0 ml-2"
+                            ></Badge>
+                          )}
+                        </div>
+
+                        <div className="justify-end">
+                          {!notification.read ? (
+                            <Button
+                              variant={"outline"}
+                              onClick={() => markAsRead(notification.id)}
+                            >
+                              <Check />
+                            </Button>
+                          ) : (
+                            <Button disabled variant={"outline"}>
+                              <CheckCheck />
+                            </Button>
+                          )}
+                        </div>
                       </div>
                       <p className="text-sm">{notification.content}</p>
                       <p className="text-xs text-muted-foreground">
@@ -909,8 +950,8 @@ export default function DashboardPage() {
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
-                            {group._count?.members || 0}/{group.group.maxSize}{" "}
-                            members
+                            {group.group?.memberCount || 0}/
+                            {group.group.maxSize} members
                           </span>
                           <span className="flex items-center gap-1">
                             <MessageSquare className="w-4 h-4" />
@@ -1030,7 +1071,7 @@ export default function DashboardPage() {
                       </div>
                       {!notification.read && (
                         <Button
-                          variant="ghost"
+                          variant="default"
                           size="sm"
                           onClick={() => markAsRead(notification.id)}
                           className="ml-2"
