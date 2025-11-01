@@ -45,6 +45,7 @@ import domains from "../data/domains";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ThemeSelector from "@/components/ThemeSelector";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Group {
   id: string;
@@ -134,6 +135,8 @@ export default function DashboardPage() {
   const [notificationLoading, setNotificationLoading] = useState(false);
   // Create group form state
   const [newGroupName, setNewGroupName] = useState("");
+  const [newGroupDescription, setNewGroupDescription] = useState("");
+
   const [newGroupSubject, setNewGroupSubject] = useState("");
   const [newGroupMaxSize, setNewGroupMaxSize] = useState("10");
   // Find groups form state
@@ -337,6 +340,7 @@ export default function DashboardPage() {
           body: JSON.stringify({
             name: newGroupName,
             subjectFocus: newGroupSubject,
+            description: newGroupDescription,
             maxsize: Number.parseInt(newGroupMaxSize),
           }),
         }
@@ -578,7 +582,9 @@ export default function DashboardPage() {
                 </DialogHeader>
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="groupName">Group Name</Label>
+                    <Label htmlFor="groupName" className="mb-1">
+                      Group Name
+                    </Label>
                     <Input
                       id="groupName"
                       value={newGroupName}
@@ -587,7 +593,20 @@ export default function DashboardPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="subject">Subject Focus</Label>
+                    <Label htmlFor="description" className="mb-1">
+                      Group Description
+                    </Label>
+                    <Textarea
+                      id="description"
+                      value={newGroupDescription}
+                      onChange={(e) => setNewGroupDescription(e.target.value)}
+                      placeholder="e.g., This is an awesome group"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="subject" className="mb-1">
+                      Subject Focus
+                    </Label>
                     <Input
                       id="subject"
                       value={newGroupSubject}
@@ -596,7 +615,9 @@ export default function DashboardPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="maxSize">Maximum Members</Label>
+                    <Label htmlFor="maxSize" className="mb-1">
+                      Maximum Members
+                    </Label>
                     <Select
                       value={newGroupMaxSize}
                       onValueChange={setNewGroupMaxSize}
@@ -828,16 +849,18 @@ export default function DashboardPage() {
                           {new Date(group.group.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <Link href={`/group/${group.groupId}`}>
-                        <Button variant="outline" size="sm">
-                          Group Details
-                        </Button>
-                      </Link>
-                      <Link href={`/chat/${group.groupId}`}>
-                        <Button variant="outline" size="sm">
-                          Open Chat
-                        </Button>
-                      </Link>
+                      <div className="flex gap-1">
+                        <Link href={`/group/${group.groupId}`}>
+                          <Button variant="outline" size="sm">
+                            Group Details
+                          </Button>
+                        </Link>
+                        <Link href={`/chat/${group.groupId}`}>
+                          <Button variant="outline" size="sm">
+                            Open Chat
+                          </Button>
+                        </Link>
+                      </div>
                     </div>
                   ))}
                   {groups.length === 0 && (
@@ -972,7 +995,11 @@ export default function DashboardPage() {
                           </span>
                         </div>
                       </div>
+
                       <div className="flex items-center gap-2">
+                        <Link href={`/group/${group.groupId}`}>
+                          <Button variant={"outline"}>Group Details</Button>
+                        </Link>
                         <Link href={`/chat/${group.id}`}>
                           <Button>Open Chat</Button>
                         </Link>
@@ -981,7 +1008,7 @@ export default function DashboardPage() {
                   </CardContent>
                 </Card>
               ))}
-              {groups.length === 0 && (
+              {groups.length === 0 ? (
                 <Card className="backdrop-blur-sm bg-card/80 border-border/50">
                   <CardContent className="p-12 text-center">
                     <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -991,6 +1018,31 @@ export default function DashboardPage() {
                     <p className="text-muted-foreground mb-6">
                       Create your first study group or find existing groups to
                       join
+                    </p>
+                    <div className="flex items-center justify-center gap-3">
+                      <Button onClick={() => setCreateGroupOpen(true)}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Create Group
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setFindGroupsOpen(true)}
+                      >
+                        <Search className="w-4 h-4 mr-2" />
+                        Find Groups
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="backdrop-blur-sm bg-card/80 border-border/50">
+                  <CardContent className="p-12 text-center">
+                    <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">
+                      Create new group
+                    </h3>
+                    <p className="text-muted-foreground mb-6">
+                      Create new study group and invite others to join
                     </p>
                     <div className="flex items-center justify-center gap-3">
                       <Button onClick={() => setCreateGroupOpen(true)}>
