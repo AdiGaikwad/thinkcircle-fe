@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,8 @@ import {
   Phone,
   Copy,
   Trash2,
+  Loader2,
+  MoreHorizontal,
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -26,6 +28,28 @@ import domains from "@/app/data/domains";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { IconLogout2, IconUserCancel } from "@tabler/icons-react";
 
 // Mock data - replace with actual API call
 // const groupData = {
@@ -77,8 +101,10 @@ interface Member {
   firstname: string;
   lastname: string;
   profilepic: string;
+  profileId: string;
   profile: {
     user: Member;
+    userId: string;
   };
   role: string;
 }
@@ -103,9 +129,11 @@ export default function GroupDetailsPage({
   params: { groupId: string };
 }) {
   const [showSettings, setShowSettings] = useState(false);
-  const isAdmin = true; // Replace with actual admin check
   const [groupData, setGroupData] = useState<Group>();
   const [apiLoading, setLoading] = useState(false);
+  const [deletingGroup, setDeletingGroup] = useState(false);
+  const [allowDelete, setAllowDelete] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { user, loading, authToken } = useAuth();
   const router = useRouter();
   useEffect(() => {
@@ -121,6 +149,44 @@ export default function GroupDetailsPage({
       element?.scrollIntoView({ behavior: "smooth" });
     }, 100);
   };
+
+  const HandleDeleteGroup = async () => {
+    try {
+      setDeletingGroup(true);
+      const response = await fetch(
+        domains.AUTH_HOST + "/api/v1/group/delete/" + groupData?.id,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: authToken,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success("Success", {
+          description: data.message || "Group deleted successfully",
+        });
+        setDeletingGroup(false);
+        router.push("/dashboard");
+      } else {
+        toast.error("Error", {
+          description: data.message || "Failed to delete group",
+        });
+        setDeletingGroup(false);
+      }
+    } catch (error) {
+      toast.error("Error", {
+        description: "Failed to delete group",
+      });
+      setDeletingGroup(false);
+    } finally {
+      setDeletingGroup(false);
+    }
+  };
+
   const editGroupInfo = async ({
     groupId,
     name,
@@ -153,6 +219,13 @@ export default function GroupDetailsPage({
     }
   };
 
+  const handleDeleteChange = (e: any) => {
+    if (e.target.value === groupData?.name) {
+      setAllowDelete(true);
+    } else {
+      setAllowDelete(false);
+    }
+  };
   useEffect(() => {
     try {
       const fetchgrpDetails = async () => {
@@ -168,7 +241,11 @@ export default function GroupDetailsPage({
         );
         if (details.data.success && details.data.group) {
           setGroupData(details.data.group);
+          if (details.data.group.admin.id === user?.id) {
+            setIsAdmin(true);
+          }
         }
+        console.log(details.data.group);
       };
       fetchgrpDetails();
     } catch (err) {
@@ -177,6 +254,36 @@ export default function GroupDetailsPage({
       setLoading(false);
     }
   }, [authToken]);
+
+  const removeMember = async (memberId: string) => {
+    try {
+      const { data } = await axios.post(
+        domains.AUTH_HOST +
+          "/api/v1/group/" +
+          groupData?.id +
+          "/memberId/" +
+          memberId,
+        {},
+        {
+          headers: {
+            Authorization: authToken,
+          },
+        }
+      );
+
+      if (data.success) {
+        toast.success("Success", {
+          description: data.message || "Member removed successfully",
+        });
+        setGroupData(data.group);
+      }
+    } catch (err) {
+      toast.error("Failed to remove member.");
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (apiLoading || loading) {
     return (
@@ -341,13 +448,48 @@ export default function GroupDetailsPage({
                           </p>
                         </div>
                       </div>
-                      <Badge
-                        variant={
-                          member.role === "Admin" ? "default" : "outline"
-                        }
-                      >
-                        {member.role}
-                      </Badge>
+                      <div>
+                        <Badge
+                          variant={
+                            member.role === "Admin" ? "default" : "outline"
+                          }
+                        >
+                          {member.role}
+                        </Badge>{" "}
+                        &nbsp;
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant={"ghost"}>
+                              <MoreHorizontal />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-56">
+                            {/* <DropdownMenuLabel>Appearance</DropdownMenuLabel> */}
+                            {/* <DropdownMenuSeparator /> */}
+                            {isAdmin && user.id !== member?.profile.userId ? (
+                              <DropdownMenuItem
+                                onClick={() => removeMember(member.profileId)}
+                              >
+                                {" "}
+                                <IconUserCancel /> Remove Member{" "}
+                              </DropdownMenuItem>
+                            ) : !isAdmin &&
+                              user?.id === member.profile.userId ? (
+                              <DropdownMenuItem>
+                                {" "}
+                                <IconLogout2 /> Leave{" "}
+                              </DropdownMenuItem>
+                            ) : (
+                              isAdmin &&
+                              user?.id === member.profile.userId && (
+                                <DropdownMenuItem>
+                                  Admin Cannot Leave group
+                                </DropdownMenuItem>
+                              )
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -564,14 +706,58 @@ export default function GroupDetailsPage({
                 <h4 className="font-semibold text-destructive mb-3">
                   Danger Zone
                 </h4>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="gap-2 w-full"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete Group
-                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="gap-2 w-4/12"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete Group
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        This action is irreversible
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action will delte the group and all related data
+                        from the servers. To confirm deletion, please enter the
+                        group name below.
+                        <br />
+                        <br />
+                        <span className="flex justify-center mb-2">
+                          <b>"{groupData?.name}"</b>
+                          <br />
+                        </span>
+                        <Input onChange={handleDeleteChange} />
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className={buttonVariants({ variant: "destructive" })}
+                        onClick={() => HandleDeleteGroup()}
+                        disabled={!allowDelete}
+                      >
+                        {deletingGroup ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                            Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <Trash2 className="w-4 h-4" />
+                            Delete Group
+                          </>
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </CardContent>
           </Card>
