@@ -40,7 +40,7 @@ export default function LoginPage() {
   );
 
   const router = useRouter();
-  const { setUser } = useAuth();
+  const { setUser, setToken } = useAuth();
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -80,8 +80,11 @@ export default function LoginPage() {
                   ? res.data.message
                   : "Logged in successfully !",
               });
-              if (res.data.user) setUser(res.data.user);
-              router.push("/dashboard");
+              if (res.data.user && res.data.token) {
+                setUser(res.data.user);
+                setToken(res.data.token);
+                router.push("/dashboard");
+              }
             }
             if (!res.data.success) {
               console.log(res.data);

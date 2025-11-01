@@ -127,7 +127,7 @@ export default function DashboardPage() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [apiLoading, setLoading] = useState(true);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [findGroupsOpen, setFindGroupsOpen] = useState(false);
   const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
@@ -151,13 +151,14 @@ export default function DashboardPage() {
   const [viewProfileDialog, setViewProfileDialog] =
     useState<JoinRequest | null>(null);
 
-  const { user, authToken } = useAuth();
+  const { user, authToken, loading } = useAuth();
   const token = authToken;
   useEffect(() => {
+    console.log(token)
     if (token) {
       fetchDashboardData();
     }
-  }, [token]);
+  }, [token, loading]);
 
   useEffect(() => {
     if (selectedGroupForRequests && token) {
@@ -492,7 +493,7 @@ export default function DashboardPage() {
     }
   };
 
-  if (loading) {
+  if (apiLoading || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center">
         <div className="text-center">

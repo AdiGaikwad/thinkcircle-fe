@@ -5,7 +5,7 @@ import type React from "react";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,9 +24,21 @@ import {
   Lock,
   Mail,
   UserCheck,
+  LogOut,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import domains from "../data/domains";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Profile {
   id: string;
@@ -45,7 +57,7 @@ interface Profile {
 }
 
 export default function ProfilePage() {
-  const { user, token, loading } = useAuth();
+  const { user, token, loading, setToken } = useAuth();
   const { toast } = useToast();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -57,7 +69,6 @@ export default function ProfilePage() {
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const [updatingEmail, setUpdatingEmail] = useState(false);
   const [updatingName, setUpdatingName] = useState(false);
-
   const [formData, setFormData] = useState({
     subjects: [] as string[],
     learningStyle: "",
@@ -87,6 +98,12 @@ export default function ProfilePage() {
     }
     if (!loading && user) fetchProfile();
   }, [user, router]);
+
+  const HandleLogOut = () => {
+    setToken("");
+    window.localStorage.setItem("token", "");
+    window.location.reload()
+  };
 
   const fetchProfile = async () => {
     try {
@@ -453,6 +470,31 @@ export default function ProfilePage() {
                   Edit Profile
                 </Button>
               )}
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant={"destructive"}>
+                    <LogOut /> Log Out
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Do you want to LogOut?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action will log you out from this device
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className={buttonVariants({ variant: "destructive" })}
+                      onClick={() => HandleLogOut()}
+                    >
+                      <LogOut /> LogOut
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </div>
 
@@ -521,6 +563,7 @@ export default function ProfilePage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label>First Name</Label>
+                      <br />
                       <Input
                         value={nameData.firstname}
                         onChange={(e) =>
@@ -534,6 +577,7 @@ export default function ProfilePage() {
                     </div>
                     <div>
                       <Label>Last Name</Label>
+                      <br />
                       <Input
                         value={nameData.lastname}
                         onChange={(e) =>
@@ -601,6 +645,7 @@ export default function ProfilePage() {
               <CardContent className="space-y-4">
                 <div>
                   <Label>Current Password</Label>
+                  &nbsp;
                   <Input
                     type="password"
                     value={passwordData.oldPassword}
@@ -615,6 +660,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <Label>New Password</Label>
+                  &nbsp;
                   <Input
                     type="password"
                     value={passwordData.newPassword}
@@ -629,6 +675,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <Label>Confirm New Password</Label>
+                  &nbsp;
                   <Input
                     type="password"
                     value={passwordData.confirmPassword}
