@@ -30,9 +30,9 @@ interface ChatSidebarProps {
 
 export function ChatSidebar({ group, onClose }: ChatSidebarProps) {
   return (
-    <div className="w-80 border-l border-border bg-background/95 backdrop-blur-sm">
-      <Card className="h-full rounded-none border-0">
-        <CardHeader className="border-b border-border">
+    <div className="w-80 border-l fixed right-0 border-border bg-background/95 backdrop-blur-sm h-screen flex flex-col">
+      <Card className="rounded-none overflow-x-scroll overflow-y-hidden border-0 flex-1 flex flex-col">
+        <CardHeader className="border-b border-border flex-shrink-0">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Group Info</CardTitle>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -41,7 +41,7 @@ export function ChatSidebar({ group, onClose }: ChatSidebarProps) {
           </div>
         </CardHeader>
 
-        <CardContent className="p-0 h-full overflow-y-auto">
+        <CardContent className="p-0 flex-1 overflow-y-auto">
           {/* Group Details */}
           <div className="p-4 space-y-4">
             <div className="text-center space-y-2">

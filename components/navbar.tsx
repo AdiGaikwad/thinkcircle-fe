@@ -19,7 +19,14 @@ import { Button } from "./ui/button";
 import { useTheme } from "next-themes";
 
 export function NavBar() {
-  const navItems = [
+
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { user, loading } = useAuth();
+  const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const navItems : any = [
+    
     // {
     //   name: "Features",
     //   link: "#features",
@@ -33,12 +40,6 @@ export function NavBar() {
     //   link: "#contact",
     // },
   ];
-
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, loading } = useAuth();
-  const pathname = usePathname();
-  const { theme, setTheme } = useTheme();
-
   document.body.style =
     pathname != "/register" && pathname != "/login"
       ? "padding-top: 70px"
@@ -58,12 +59,12 @@ export function NavBar() {
 
   return (
     <div className="relative w-full">
-      {pathname != "/login" && pathname != "/register" && (
+      {pathname != "/login" && pathname != "/register" && !pathname.includes("/chat") && (
         <Navbar>
           {/* Desktop Navigation */}
           <NavBody>
             <NavbarLogo />
-            <NavItems items={navItems} />
+            <NavItems items={[]} />
 
             {!loading && !user ? (
               <div className="flex items-center gap-4">
@@ -109,7 +110,7 @@ export function NavBar() {
               isOpen={isMobileMenuOpen}
               onClose={() => setIsMobileMenuOpen(false)}
             >
-              {navItems.map((item, idx) => (
+              {navItems.map((item:any, idx:any) => (
                 <a
                   key={`mobile-link-${idx}`}
                   href={item.link}

@@ -154,7 +154,7 @@ export default function DashboardPage() {
   const { user, authToken, loading } = useAuth();
   const token = authToken;
   useEffect(() => {
-    console.log(token)
+    console.log(token);
     if (token) {
       fetchDashboardData();
     }
@@ -828,6 +828,11 @@ export default function DashboardPage() {
                           {new Date(group.group.createdAt).toLocaleDateString()}
                         </p>
                       </div>
+                      <Link href={`/group/${group.groupId}`}>
+                        <Button variant="outline" size="sm">
+                          Group Details
+                        </Button>
+                      </Link>
                       <Link href={`/chat/${group.groupId}`}>
                         <Button variant="outline" size="sm">
                           Open Chat

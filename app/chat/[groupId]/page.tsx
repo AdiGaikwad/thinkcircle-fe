@@ -115,6 +115,10 @@ export default function ChatPage({ params }: { params: { groupId: string } }) {
   }, [messages])
 
   useEffect(() => {
+    document.body.style = "padding-top: 0px"
+  }, [])
+
+  useEffect(() => {
     const interval = setInterval(() => {
       const randomUser = Math.random() > 0.8 ? "2" : null // Sarah typing occasionally
       if (randomUser && !typingUsers.includes(randomUser)) {
