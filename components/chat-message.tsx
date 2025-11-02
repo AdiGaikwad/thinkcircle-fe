@@ -44,7 +44,7 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
 
   const getReadStatus = () => {
     if (!isOwn) return null
-    if (message.readBy.length === 0) return <Check className="w-3 h-3 text-muted-foreground" />
+    if (!message.fullyRead) return <Check className="w-3 h-3 text-muted-foreground" />
     return <CheckCheck className="w-3 h-3 text-accent" />
   }
 
@@ -69,12 +69,12 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
     <div className={`flex gap-3 group ${isOwn ? "flex-row-reverse" : ""}`}>
       {!isOwn && (
         <Avatar className="w-8 h-8 mt-1">
-          <AvatarImage src={message.senderAvatar || "/placeholder.svg"} alt={message.senderName} />
+          <AvatarImage src={message.sender.profilepic || "/placeholder.svg"} alt={message.sender.firstname} />
           <AvatarFallback className={isAIMessage ? "bg-gradient-to-r from-accent to-primary text-white" : ""}>
             {isAIMessage ? (
               <Bot className="w-4 h-4" />
             ) : (
-              message.senderName
+              message.sender.firstname
                 .split(" ")
                 .map((n) => n[0])
                 .join("")
@@ -87,7 +87,7 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
         {!isOwn && (
           <div className="flex items-center gap-2 mb-1">
             <span className={`text-sm font-medium ${isAIMessage ? "text-accent" : "text-foreground"}`}>
-              {message.senderName}
+              {message.sender.firstname}
             </span>
             {isAIMessage && message.aiType && (
               <div className="flex items-center gap-1">
@@ -96,7 +96,7 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
               </div>
             )}
             <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(message.timestamp, { addSuffix: true })}
+              {formatDistanceToNow(message.createdAt, { addSuffix: true })}
             </span>
           </div>
         )}
@@ -127,7 +127,7 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
             )}
 
             <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isAIMessage ? "text-foreground" : ""}`}>
-              {message.content}
+              {message.message}
             </p>
 
             {/* Message actions */}
@@ -220,7 +220,7 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
           )}
 
           {/* Reactions */}
-          {message.reactions.length > 0 && (
+          {/* {message.reactions.length > 0 && (
             <div className={`flex flex-wrap gap-1 mt-2 ${isOwn ? "mr-12" : "ml-12"}`}>
               {message.reactions.map((reaction, index) => (
                 <Button
@@ -237,12 +237,12 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
                 </Button>
               ))}
             </div>
-          )}
+          )} */}
 
           {/* Read status and timestamp for own messages */}
           {isOwn && (
             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-              <span>{formatDistanceToNow(message.timestamp, { addSuffix: true })}</span>
+              <span>{formatDistanceToNow(message.createdAt, { addSuffix: true })}</span>
               {getReadStatus()}
             </div>
           )}
