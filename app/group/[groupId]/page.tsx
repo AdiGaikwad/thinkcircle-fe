@@ -285,6 +285,32 @@ export default function GroupDetailsPage({
     }
   };
 
+  const leaveGroup = async () => {
+    try {
+      const { data } = await axios.delete(
+        domains.AUTH_HOST + "/api/v1/group/" + groupData?.id + "/leave",
+        {
+          headers: {
+            Authorization: authToken,
+          },
+        }
+      );
+
+      if (data.success) {
+        toast.success("Success", {
+          description: data.message || "Group left successfully",
+        });
+        setGroupData(data.group);
+        router.push("/dashboard");
+      }
+    } catch (err) {
+      toast.error("Failed to leave group.");
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (apiLoading || loading) {
     return (
       //skeleton loader
@@ -475,7 +501,7 @@ export default function GroupDetailsPage({
                               </DropdownMenuItem>
                             ) : !isAdmin &&
                               user?.id === member.profile.userId ? (
-                              <DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => leaveGroup()}>
                                 {" "}
                                 <IconLogout2 /> Leave{" "}
                               </DropdownMenuItem>
