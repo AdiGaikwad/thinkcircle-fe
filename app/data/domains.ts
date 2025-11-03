@@ -10,8 +10,8 @@ interface Domains {
 }
 
 const domains: Domains = {
-    AUTH_HOST: process.env.NODE_ENV === "production" ? "https://thinkcircle-v0-auth.dhupkar.in/" : "http://localhost:3500",
-    SOCKET_HOST: process.env.NODE_ENV === "production" ? "https://thinkcircle-v0-auth.dhupkar.in/" : "http://localhost:3500",
+    AUTH_HOST: process.env.NODE_ENV === "production" ? "https://thinkcircle-v0-auth.dhupkar.in" : "http://localhost:3500",
+    SOCKET_HOST: process.env.NODE_ENV === "production" ? "https://thinkcircle-v0-auth.dhupkar.in" : "http://localhost:3500",
     API_HOST: ""
 
 }
