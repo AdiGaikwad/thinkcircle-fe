@@ -2,7 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -41,7 +47,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext"; // Corrected import path
 import domains from "../data/domains";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -60,6 +66,16 @@ interface Group {
   _count?: {
     members: number;
     messages: number;
+  };
+  groupId?: string; // Added for consistency with the group data structure used in the Select component
+  group?: {
+    // Added to match the structure when iterating over `groups` in the UI
+    name: string;
+    subjectFocus: string;
+    maxSize: number;
+    memberCount?: number;
+    createdAt: string;
+    adminId: string;
   };
 }
 
@@ -89,6 +105,8 @@ interface Summary {
   group: {
     name: string;
   };
+  title?: string; // Added for potential use in modal or summary display
+  content?: string; // Added for potential use in modal or summary display
 }
 
 interface Notification {
@@ -162,29 +180,41 @@ export default function DashboardPage() {
   const [selectedSummary, setSelectedSummary] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchSummaries = async () => {
-      try {
-        setIsLoading(true);
-        const res = await fetch(
-          `${domains.AUTH_HOST}/api/v1/summary/group/${groups[0].groupId}/summary`,
-          {
-            headers: {
-              Authorization: `${authToken}`,
-            },
-          }
-        );
-        const data = await res.json();
-        if (data.summary) setSummaries(data.summary);
-      } catch (err) {
-        console.error("Error fetching summaries:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const [selectedSummaryGroupId, setSelectedSummaryGroupId] =
+    useState<string>("");
+  const [summaryLoadingGroupId, setSummaryLoadingGroupId] =
+    useState<string>("");
 
-    fetchSummaries();
-  }, [groups]);
+  useEffect(() => {
+    if (selectedSummaryGroupId && token) {
+      const fetchSummariesForGroup = async () => {
+        try {
+          setSummaryLoadingGroupId(selectedSummaryGroupId);
+          const res = await fetch(
+            `${domains.AUTH_HOST}/api/v1/summary/group/${selectedSummaryGroupId}/summary`,
+            {
+              headers: {
+                Authorization: `${token}`,
+              },
+            }
+          );
+          const data = await res.json();
+          if (data.summary) setSummaries(data.summary);
+        } catch (err) {
+          console.error("Error fetching summaries:", err);
+          toast.error("Error", {
+            description: "Failed to fetch summaries",
+          });
+        } finally {
+          setSummaryLoadingGroupId("");
+        }
+      };
+
+      fetchSummariesForGroup();
+    } else {
+      setSummaries([]);
+    }
+  }, [selectedSummaryGroupId, token]);
 
   useEffect(() => {
     console.log(token);
@@ -215,7 +245,13 @@ export default function DashboardPage() {
 
       if (groupsResponse.ok) {
         const groupsData = await groupsResponse.json();
-        setGroups(groupsData.groups || []);
+        // Ensure group data structure is consistent, especially for `group.name` etc.
+        const processedGroups = (groupsData.groups || []).map((g: any) => ({
+          ...g,
+          // groupId: g.id, // Add groupId for consistency if needed elsewhere
+          group: g.group || g, // Use g.group if it exists, otherwise use g itself
+        }));
+        setGroups(processedGroups);
       }
 
       // Fetch summaries (keeping existing logic as summaries endpoint not provided)
@@ -869,14 +905,23 @@ export default function DashboardPage() {
                       key={group.id}
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border"
                     >
+                      {console.log(group)}
                       <div>
-                        <h4 className="font-medium">{group.group.name}</h4>
+                        <h4 className="font-medium">
+                          {group.group?.name || group.name}
+                        </h4>
                         <p className="text-sm text-muted-foreground">
-                          {group.subjectFocus}
+                          {group.group?.subjectFocus || group.subjectFocus}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {group?.group?.memberCount || 0} members • Created{" "}
-                          {new Date(group.group.createdAt).toLocaleDateString()}
+                          {group.group?.memberCount ||
+                            group.group?._count?.members ||
+                            group._count?.members ||
+                            0}{" "}
+                          members • Created{" "}
+                          {new Date(
+                            group.group?.createdAt || group.createdAt
+                          ).toLocaleDateString()}
                         </p>
                       </div>
                       <div className="flex gap-1">
@@ -990,27 +1035,31 @@ export default function DashboardPage() {
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <h3 className="text-lg font-semibold">
-                            {group.group.name}
+                            {group.group?.name || group.name}
                           </h3>
                           {group.createdByAI && (
                             <Badge variant="secondary" className="text-xs">
                               AI Matched
                             </Badge>
                           )}
-                          {group.adminId === user?.id && (
+                          {group.group?.adminId === user?.id && (
                             <Badge variant="outline" className="text-xs">
                               Admin
                             </Badge>
                           )}
                         </div>
                         <p className="text-muted-foreground">
-                          Subject: {group.group.subjectFocus}
+                          Subject:{" "}
+                          {group.group?.subjectFocus || group.subjectFocus}
                         </p>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Users className="w-4 h-4" />
-                            {group.group?.memberCount || 0}/
-                            {group.group.maxSize} members
+                            {group.group?.memberCount ||
+                              group.group?._count?.members ||
+                              group._count?.members ||
+                              0}
+                            /{group.group?.maxSize || group.maxSize} members
                           </span>
                           <span className="flex items-center gap-1">
                             <MessageSquare className="w-4 h-4" />
@@ -1020,17 +1069,17 @@ export default function DashboardPage() {
                             <Calendar className="w-4 h-4" />
                             Created{" "}
                             {new Date(
-                              group.group.createdAt
+                              group.group?.createdAt || group.createdAt
                             ).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <Link href={`/group/${group.groupId}`}>
+                        <Link href={`/group/${group.groupId || group.id}`}>
                           <Button variant={"outline"}>Group Details</Button>
                         </Link>
-                        <Link href={`/chat/${group.groupId}`}>
+                        <Link href={`/chat/${group.groupId || group.id}`}>
                           <Button>Open Chat</Button>
                         </Link>
                       </div>
@@ -1093,49 +1142,106 @@ export default function DashboardPage() {
             </div>
           </TabsContent>
           <TabsContent value="summaries" className="space-y-6 relative">
-            {/* Summaries Section */}
             <Card className="backdrop-blur-sm bg-card/80 border-border/50">
-              <CardContent className="p-6">
-                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <Brain className="w-5 h-5 text-primary" />
-                  Group Summaries
-                </h3>
+                  AI Summaries by Group
+                </CardTitle>
+                <CardDescription>
+                  Select a group to view its study summaries
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="summary-group-select"
+                    className="text-base font-medium"
+                  >
+                    Choose a Study Group
+                  </Label>
+                  <Select
+                    value={selectedSummaryGroupId}
+                    onValueChange={setSelectedSummaryGroupId}
+                  >
+                    <SelectTrigger id="summary-group-select" className="w-full">
+                      <SelectValue placeholder="Select a group to view summaries" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {groups.length === 0 ? (
+                        <div className="p-4 text-center text-muted-foreground">
+                          No groups available
+                        </div>
+                      ) : (
+                        groups.map((group: any) => (
+                          <SelectItem
+                            key={group.groupId || group.id}
+                            value={group.groupId || group.id}
+                          >
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">
+                                {group.group?.name || group.name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                (
+                                {group.group?.subjectFocus ||
+                                  group.subjectFocus}
+                                )
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                {isLoading ? (
+                {!selectedSummaryGroupId ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <Brain className="w-10 h-10 opacity-50 mb-3" />
+                    <p className="text-center">
+                      Select a study group from above to view its AI-generated
+                      summaries
+                    </p>
+                  </div>
+                ) : summaryLoadingGroupId === selectedSummaryGroupId ? (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Loader2 className="w-6 h-6 animate-spin mb-3" />
-                    Fetching summaries...
+                    <p>Fetching summaries...</p>
                   </div>
                 ) : summaries.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                     <Brain className="w-10 h-10 opacity-50 mb-3" />
-                    <p>No summaries available yet.</p>
+                    <p>No summaries available yet for this group.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {summaries.map((summary) => (
+                    {summaries.map((summary, index) => (
                       <div
-                        key={summary.id}
-                        className="flex justify-between items-start p-4 rounded-lg border border-border/40 hover:bg-muted/40 cursor-pointer transition"
+                        key={summary.id || index}
+                        className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 p-4 rounded-lg border border-border/40 hover:bg-muted/40 cursor-pointer transition"
                         onClick={() => setSelectedSummary(summary)}
                       >
-                        <div>
-                          <h4 className="font-semibold">
-                            {summary.topicsCovered || "Untitled Summary"}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold truncate">
+                            {summary.topicsCovered
+                              ? `Topics: ${summary.topicsCovered.join(", ")}`
+                              : "Untitled Summary"}
                           </h4>
                           <p className="text-sm text-muted-foreground line-clamp-2">
-                            {summary.content}
+                            {summary.content || "No description available"}
                           </p>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-xs text-muted-foreground mt-2">
                             {new Date(summary.createdAt).toLocaleString()}
                           </p>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-primary"
+                          className="text-primary whitespace-nowrap"
                         >
-                          Details
+                          <Eye className="w-4 h-4 mr-1" />
+                          View
                         </Button>
                       </div>
                     ))}
@@ -1144,7 +1250,6 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
 
-            {/* Modal for Summary Details */}
             {selectedSummary && (
               <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                 <Card className="w-full max-w-2xl bg-card/95 border-border/50 shadow-2xl animate-ai-glow relative">
@@ -1165,20 +1270,23 @@ export default function DashboardPage() {
                     {selectedSummary.topicsCovered &&
                       selectedSummary.topicsCovered.length > 0 && (
                         <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                          Topics Covered: {selectedSummary.topicsCovered.join(", ")}
+                          Topics Covered:{" "}
+                          {selectedSummary.topicsCovered.join(", ")}
                         </p>
                       )}
                     {selectedSummary.keyQuestions &&
                       selectedSummary.keyQuestions.length > 0 && (
                         <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                          Key Questions: {selectedSummary.keyQuestions.join(", ")}
+                          Key Questions:{" "}
+                          {selectedSummary.keyQuestions.join(", ")}
                         </p>
                       )}
-                    {selectedSummary.actionItems && selectedSummary.actionItems.length > 0 && (
-                      <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                        Action Items: {selectedSummary.actionItems.join(", ")}
-                      </p>
-                    )}
+                    {selectedSummary.actionItems &&
+                      selectedSummary.actionItems.length > 0 && (
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                          Action Items: {selectedSummary.actionItems.join(", ")}
+                        </p>
+                      )}
                     <p className="text-xs text-muted-foreground text-right mt-6">
                       Generated on{" "}
                       {new Date(selectedSummary.createdAt).toLocaleString()}
@@ -1332,6 +1440,7 @@ export default function DashboardPage() {
                                     <AvatarImage
                                       src={
                                         request?.profile?.user?.profilepic ||
+                                        "/placeholder.svg" ||
                                         "/placeholder.svg"
                                       }
                                     />
@@ -1468,6 +1577,7 @@ export default function DashboardPage() {
                     <AvatarImage
                       src={
                         viewProfileDialog?.profile?.user?.profilepic ||
+                        "/placeholder.svg" ||
                         "/placeholder.svg"
                       }
                     />
