@@ -82,8 +82,9 @@ export function useSocket({
       onMessageReceived?.(message)
     })
 
-    socket.on("user-typing", ({ userId }) => {
-      onTypingUsers?.([userId])
+    socket.on("user-typing", ({ fullname }) => {
+      onTypingUsers?.([fullname])
+      // onTypingUsers?.([userId])
     })
 
     socket.on("group-online-users", (users: string[]) => {

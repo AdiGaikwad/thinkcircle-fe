@@ -18,6 +18,7 @@ import {
   Clock,
   Sparkles,
   Loader2,
+  ArrowLeft,
 } from "lucide-react";
 import { ChatMessage } from "@/components/chat-message";
 import { TypingIndicator } from "@/components/typing-indicator";
@@ -28,6 +29,8 @@ import { useSocket } from "@/hooks/use-socket";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/context/AuthContext"; // Updated import
 import domains from "@/app/data/domains"; // Updated import
+import Link from "next/link";
+import { SummaryAssistant } from "@/components/summary-assistant";
 
 interface GroupData {
   id: string;
@@ -81,6 +84,7 @@ export default function ChatPage({
     sendMessage,
     emitTyping,
     markMessagesAsRead,
+
     isConnected,
   } = useSocket({
     groupId: groupId,
@@ -97,6 +101,15 @@ export default function ChatPage({
         scrollToBottom();
       }
     },
+    onTypingUsers: (users) => {
+      // Filter out current user if needed
+
+      console.log("[v0] Typing users:", users);
+      // const filtered = users.filter((id) => id !== user?.id);
+
+      setTypingUsers(users);
+      // setTypingUsers(groupData);
+    },
     onOnlineUsers: (users) => {
       setOnlineUsers(users);
     },
@@ -104,7 +117,9 @@ export default function ChatPage({
       console.log("[v0] Messages read:", data);
       setMessages((prev) =>
         prev.map((msg) =>
-          data.messageIds.includes(msg.id) ? { ...msg, isRead: true, fullyRead: true } : msg
+          data.messageIds.includes(msg.id)
+            ? { ...msg, isRead: true, fullyRead: true }
+            : msg
         )
       );
     },
@@ -117,6 +132,11 @@ export default function ChatPage({
       });
     },
   });
+  useEffect(() => {
+    setTimeout(() => {
+      setTypingUsers([]);
+    }, 3500);
+  }, [typingUsers]);
 
   useEffect(() => {
     const fetchGroupData = async () => {
@@ -356,7 +376,7 @@ export default function ChatPage({
     const aiMessage = {
       id: Date.now().toString(),
       senderId: "ai",
-      sender:{
+      sender: {
         id: "ai",
       },
       senderName: "AI Study Assistant",
@@ -382,18 +402,22 @@ export default function ChatPage({
 
     const observer = new IntersectionObserver((entries) => {
       // console.log(entries)
-     
+
       const visibleMessageIds = entries
         .filter((entry) => entry.isIntersecting)
         .map((entry) => {
           const messageId = entry.target.getAttribute("data-message-id");
           return messageId;
         })
-        .filter((id) => id !== null ) as string[];
-        // console.log("visible ids: ", visibleMessageIds);
-        //getting messages ids only which are not marked as read
-        // and messages that do not match to the current user
-        const notReadMessageIds = visibleMessageIds.filter(id => !messages.find(m => m.id === id)?.isRead && messages.find(m => m.id === id)?.sender.id !== user?.id)
+        .filter((id) => id !== null) as string[];
+      // console.log("visible ids: ", visibleMessageIds);
+      //getting messages ids only which are not marked as read
+      // and messages that do not match to the current user
+      const notReadMessageIds = visibleMessageIds.filter(
+        (id) =>
+          !messages.find((m) => m.id === id)?.isRead &&
+          messages.find((m) => m.id === id)?.sender.id !== user?.id
+      );
 
       if (visibleMessageIds.length > 0) {
         // console.log("marking: ", notReadMessageIds);
@@ -459,6 +483,9 @@ export default function ChatPage({
           <CardHeader className="py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
+                <Link href="/dashboard">
+                  <ArrowLeft className="w-8 h-5 text-accent" />
+                </Link>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-accent flex items-center justify-center">
                     <MessageCircle className="w-5 h-5 text-white" />
@@ -493,7 +520,17 @@ export default function ChatPage({
                   className="flex items-center gap-2 bg-gradient-to-r from-accent/10 to-primary/10 border-accent/20 hover:from-accent/20 hover:to-primary/20"
                 >
                   <Sparkles className="w-4 h-4 text-accent" />
-                  AI Assistant
+                  Summarize
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  onClick={() => openAIAssistant()}
+                  className="flex items-center gap-2 bg-gradient-to-r from-accent/10 to-primary/10 border-accent/20 hover:from-accent/20 hover:to-primary/20"
+                >
+                  <Sparkles className="w-4 h-4 text-accent" />
+                  Assistant coming soon
                 </Button>
                 {/* <Button
                   variant="outline"
@@ -579,20 +616,21 @@ export default function ChatPage({
                 </p>
               </div>
             ) : (
-              messages.map((message) => (
-               ( message &&  <div key={message.id} data-message-id={message.id}>
-          
-
-                  <ChatMessage
-                    message={message}
-                    isOwn={message.sender.id === user?.id}
-                    onPin={() => togglePin(message.id)}
-                    onHighlight={() => toggleHighlight(message.id)}
-                    onReaction={(emoji) => addReaction(message.id, emoji)}
-                    onAIAssist={() => openAIAssistant(message.id)}
-                  />
-                </div>)
-              ))
+              messages.map(
+                (message) =>
+                  message && (
+                    <div key={message.id} data-message-id={message.id}>
+                      <ChatMessage
+                        message={message}
+                        isOwn={message.sender.id === user?.id}
+                        onPin={() => togglePin(message.id)}
+                        onHighlight={() => toggleHighlight(message.id)}
+                        onReaction={(emoji) => addReaction(message.id, emoji)}
+                        onAIAssist={() => openAIAssistant(message.id)}
+                      />
+                    </div>
+                  )
+              )
             )}
 
             {typingUsers.length > 0 && <TypingIndicator users={typingUsers} />}
@@ -642,21 +680,26 @@ export default function ChatPage({
         </Card>
       </div>
       {groupData && sidebarOpen && (
-        <ChatSidebar group={groupData} user={user} onClose={() => setSidebarOpen(false)} />
+        <ChatSidebar
+          group={groupData}
+          user={user}
+          onClose={() => setSidebarOpen(false)}
+        />
       )}
 
-      {aiAssistantOpen && (
-        <AIAssistant
+      {aiAssistantOpen && groupData && (
+        <SummaryAssistant
           isOpen={aiAssistantOpen}
           onClose={closeAIAssistant}
-          onResponse={handleAIResponse}
-          selectedMessage={
-            selectedMessageForAI
-              ? messages.find((m) => m.id === selectedMessageForAI)
-              : null
-          }
-          conversationContext={messages.slice(-5)}
-          groupSubject={groupData?.subjectFocus || ""}
+          groupId={groupData?.id}
+          // onResponse={handleAIResponse}
+          // selectedMessage={
+          //   selectedMessageForAI
+          //     ? messages.find((m) => m.id === selectedMessageForAI)
+          //     : null
+          // }
+          // conversationContext={messages.slice(-5)}
+          // groupSubject={groupData?.subjectFocus || ""}
         />
       )}
     </div>

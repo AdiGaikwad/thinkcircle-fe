@@ -7,6 +7,7 @@ interface TypingIndicatorProps {
 }
 
 export function TypingIndicator({ users }: TypingIndicatorProps) {
+  console.log(users)
   return (
     <div className="flex items-center gap-3">
       <Avatar className="w-8 h-8">

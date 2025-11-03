@@ -38,6 +38,7 @@ import {
   CheckCheck,
   Check,
   User,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
@@ -126,7 +127,7 @@ interface JoinRequest {
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [groups, setGroups] = useState<Group[]>([]);
-  const [summaries, setSummaries] = useState<Summary[]>([]);
+  // const [summaries, setSummaries] = useState<Summary[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [apiLoading, setLoading] = useState(true);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
@@ -156,6 +157,35 @@ export default function DashboardPage() {
 
   const { user, authToken, loading } = useAuth();
   const token = authToken;
+
+  const [summaries, setSummaries] = useState<any[]>([]);
+  const [selectedSummary, setSelectedSummary] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchSummaries = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(
+          `${domains.AUTH_HOST}/api/v1/summary/group/${groups[0].groupId}/summary`,
+          {
+            headers: {
+              Authorization: `${authToken}`,
+            },
+          }
+        );
+        const data = await res.json();
+        if (data.summary) setSummaries(data.summary);
+      } catch (err) {
+        console.error("Error fetching summaries:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSummaries();
+  }, [groups]);
+
   useEffect(() => {
     console.log(token);
     if (token) {
@@ -1062,19 +1092,101 @@ export default function DashboardPage() {
               )}
             </div>
           </TabsContent>
-
-          <TabsContent value="summaries" className="space-y-6">
+          <TabsContent value="summaries" className="space-y-6 relative">
+            {/* Summaries Section */}
             <Card className="backdrop-blur-sm bg-card/80 border-border/50">
-              <CardContent className="p-12 text-center">
-                <Brain className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">
-                  AI Summaries Coming Soon
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                  <Brain className="w-5 h-5 text-primary" />
+                  Group Summaries
                 </h3>
-                <p className="text-muted-foreground">
-                  AI summaries will appear here after your study group sessions
-                </p>
+
+                {isLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <Loader2 className="w-6 h-6 animate-spin mb-3" />
+                    Fetching summaries...
+                  </div>
+                ) : summaries.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                    <Brain className="w-10 h-10 opacity-50 mb-3" />
+                    <p>No summaries available yet.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {summaries.map((summary) => (
+                      <div
+                        key={summary.id}
+                        className="flex justify-between items-start p-4 rounded-lg border border-border/40 hover:bg-muted/40 cursor-pointer transition"
+                        onClick={() => setSelectedSummary(summary)}
+                      >
+                        <div>
+                          <h4 className="font-semibold">
+                            {summary.topicsCovered || "Untitled Summary"}
+                          </h4>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {summary.content}
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {new Date(summary.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-primary"
+                        >
+                          Details
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
+
+            {/* Modal for Summary Details */}
+            {selectedSummary && (
+              <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <Card className="w-full max-w-2xl bg-card/95 border-border/50 shadow-2xl animate-ai-glow relative">
+                  <CardHeader className="border-b border-border/40 flex items-center justify-between">
+                    <CardTitle>
+                      {selectedSummary.title || "Group Summary"}
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setSelectedSummary(null)}
+                      className="absolute right-4 top-4"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-4 overflow-y-auto max-h-[60vh]">
+                    {selectedSummary.topicsCovered &&
+                      selectedSummary.topicsCovered.length > 0 && (
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                          Topics Covered: {selectedSummary.topicsCovered.join(", ")}
+                        </p>
+                      )}
+                    {selectedSummary.keyQuestions &&
+                      selectedSummary.keyQuestions.length > 0 && (
+                        <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                          Key Questions: {selectedSummary.keyQuestions.join(", ")}
+                        </p>
+                      )}
+                    {selectedSummary.actionItems && selectedSummary.actionItems.length > 0 && (
+                      <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                        Action Items: {selectedSummary.actionItems.join(", ")}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted-foreground text-right mt-6">
+                      Generated on{" "}
+                      {new Date(selectedSummary.createdAt).toLocaleString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-6">

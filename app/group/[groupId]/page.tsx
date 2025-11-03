@@ -764,10 +764,10 @@ export default function GroupDetailsPage({
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
+                      <Button
                         className={buttonVariants({ variant: "destructive" })}
                         onClick={() => HandleDeleteGroup()}
-                        disabled={!allowDelete}
+                        disabled={!allowDelete || deletingGroup}
                       >
                         {deletingGroup ? (
                           <>
@@ -780,7 +780,7 @@ export default function GroupDetailsPage({
                             Delete Group
                           </>
                         )}
-                      </AlertDialogAction>
+                      </Button>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
