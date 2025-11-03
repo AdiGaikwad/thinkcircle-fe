@@ -1000,7 +1000,7 @@ export default function DashboardPage() {
                         <Link href={`/group/${group.groupId}`}>
                           <Button variant={"outline"}>Group Details</Button>
                         </Link>
-                        <Link href={`/chat/${group.id}`}>
+                        <Link href={`/chat/${group.groupId}`}>
                           <Button>Open Chat</Button>
                         </Link>
                       </div>
