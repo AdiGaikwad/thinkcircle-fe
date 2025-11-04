@@ -154,7 +154,7 @@ export default function ChatPage({
 
       setIsUploading(true);
       setUploadProgress(0);
-      console.log(user)
+      console.log(user);
       const uploadedFiles = await uploadAttachment(
         file,
         authToken!,
@@ -719,7 +719,7 @@ export default function ChatPage({
                   </Button>
                 </div>
               </div> */}
-              <div className="flex-1 relative">
+              <div className="flex w-full relative">
                 {" "}
                 <Input
                   ref={inputRef}

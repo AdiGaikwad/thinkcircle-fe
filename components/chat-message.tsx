@@ -1,76 +1,122 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MoreHorizontal, Pin, Star, Reply, Copy, Check, CheckCheck, Sparkles, Bot } from "lucide-react"
-import { formatDistanceToNow } from "date-fns"
+import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  MoreHorizontal,
+  Pin,
+  Star,
+  Reply,
+  Copy,
+  Check,
+  CheckCheck,
+  Sparkles,
+  Bot,
+} from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 interface Reaction {
-  emoji: string
-  count: number
-  users: string[]
+  emoji: string;
+  count: number;
+  users: string[];
+}
+
+interface Attachment {
+  id: string;
+  messageId: string;
+  url: string;
+  type: string;
+  createdAt: string;
 }
 
 interface Message {
-  id: string
-  senderId: string
-  senderName: string
-  senderAvatar: string
-  content: string
-  timestamp: Date
-  type: "text" | "image" | "file"
-  reactions: Reaction[]
-  readBy: string[]
-  isPinned: boolean
-  isHighlighted: boolean
-  aiType?: "explanation" | "definition" | "quiz" | "suggestion"
+  id: string;
+  senderId: string;
+  sender: {
+    id: string;
+    firstname: string;
+    lastname: string;
+    profilepic?: string;
+  };
+  message: string;
+  createdAt: string;
+  attachments?: Attachment[];
+  fullyRead: boolean;
+  isRead: boolean;
+  readByCount: number;
+  isPinned: boolean;
+  isHighlighted: boolean;
+  type?: "text" | "file" | "image";
+  aiType?: "explanation" | "definition" | "quiz" | "suggestion";
 }
 
 interface ChatMessageProps {
-  message: Message
-  isOwn: boolean
-  onPin: () => void
-  onHighlight: () => void
-  onReaction: (emoji: string) => void
-  onAIAssist?: () => void
+  message: Message;
+  isOwn: boolean;
+  onPin: () => void;
+  onHighlight: () => void;
+  onReaction: (emoji: string) => void;
+  onAIAssist?: () => void;
 }
 
-const quickReactions = ["👍", "❤️", "😂", "😮", "😢", "🔥", "💡", "✅"]
+const quickReactions = ["👍", "❤️", "😂", "😮", "😢", "🔥", "💡", "✅"];
 
-export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, onAIAssist }: ChatMessageProps) {
-  const [showReactions, setShowReactions] = useState(false)
+export function ChatMessage({
+  message,
+  isOwn,
+  onPin,
+  onHighlight,
+  onReaction,
+  onAIAssist,
+}: ChatMessageProps) {
+  const [showReactions, setShowReactions] = useState(false);
 
   const getReadStatus = () => {
-    if (!isOwn) return null
-    if (!message.fullyRead) return <Check className="w-3 h-3 text-muted-foreground" />
-    return <CheckCheck className="w-3 h-3 text-accent" />
-  }
+    if (!isOwn) return null;
+    if (!message.fullyRead)
+      return <Check className="w-3 h-3 text-muted-foreground" />;
+    return <CheckCheck className="w-3 h-3 text-accent" />;
+  };
 
-  const isAIMessage = message.senderId === "ai"
+  const isAIMessage = message.senderId === "ai";
 
   const getAITypeIcon = () => {
     switch (message.aiType) {
       case "explanation":
-        return <Sparkles className="w-3 h-3 text-accent" />
+        return <Sparkles className="w-3 h-3 text-accent" />;
       case "definition":
-        return <Bot className="w-3 h-3 text-primary" />
+        return <Bot className="w-3 h-3 text-primary" />;
       case "quiz":
-        return <span className="text-xs">🧠</span>
+        return <span className="text-xs">🧠</span>;
       case "suggestion":
-        return <span className="text-xs">💡</span>
+        return <span className="text-xs">💡</span>;
       default:
-        return <Bot className="w-3 h-3 text-accent" />
+        return <Bot className="w-3 h-3 text-accent" />;
     }
-  }
+  };
 
   return (
     <div className={`flex gap-3 group ${isOwn ? "flex-row-reverse" : ""}`}>
       {!isOwn && (
         <Avatar className="w-8 h-8 mt-1">
-          <AvatarImage src={message.sender.profilepic || "/placeholder.svg"} alt={message.sender.firstname} />
-          <AvatarFallback className={isAIMessage ? "bg-gradient-to-r from-accent to-primary text-white" : ""}>
+          <AvatarImage
+            src={message.sender.profilepic || "/placeholder.svg"}
+            alt={message.sender.firstname}
+          />
+          <AvatarFallback
+            className={
+              isAIMessage
+                ? "bg-gradient-to-r from-accent to-primary text-white"
+                : ""
+            }
+          >
             {isAIMessage ? (
               <Bot className="w-4 h-4" />
             ) : (
@@ -83,16 +129,26 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
         </Avatar>
       )}
 
-      <div className={`flex-1 max-w-[70%] ${isOwn ? "flex flex-col items-end" : ""}`}>
+      <div
+        className={`flex-1 max-w-[70%] ${
+          isOwn ? "flex flex-col items-end" : ""
+        }`}
+      >
         {!isOwn && (
           <div className="flex items-center gap-2 mb-1">
-            <span className={`text-sm font-medium ${isAIMessage ? "text-accent" : "text-foreground"}`}>
+            <span
+              className={`text-sm font-medium ${
+                isAIMessage ? "text-accent" : "text-foreground"
+              }`}
+            >
               {message.sender.firstname}
             </span>
             {isAIMessage && message.aiType && (
               <div className="flex items-center gap-1">
                 {getAITypeIcon()}
-                <span className="text-xs text-muted-foreground capitalize">{message.aiType}</span>
+                <span className="text-xs text-muted-foreground capitalize">
+                  {message.aiType}
+                </span>
               </div>
             )}
             <span className="text-xs text-muted-foreground">
@@ -109,10 +165,12 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
                 isOwn
                   ? "bg-primary text-primary-foreground ml-12"
                   : isAIMessage
-                    ? "bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20"
-                    : "bg-card border border-border"
+                  ? "bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/20"
+                  : "bg-card border border-border"
               }
-              ${message.isHighlighted ? "ring-2 ring-accent/50 bg-accent/5" : ""}
+              ${
+                message.isHighlighted ? "ring-2 ring-accent/50 bg-accent/5" : ""
+              }
               ${message.isPinned ? "border-primary/50" : ""}
             `}
           >
@@ -126,9 +184,57 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
               <Pin className="absolute -top-2 -right-2 w-4 h-4 text-primary bg-background rounded-full p-0.5" />
             )}
 
-            <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isAIMessage ? "text-foreground" : ""}`}>
-              {message.message}
-            </p>
+            {/* Message Content / Attachments */}
+            <div className="flex flex-col gap-2">
+              {/* If there's text */}
+              {message.message && (
+                <p
+                  className={`text-sm leading-relaxed whitespace-pre-wrap ${
+                    isAIMessage ? "text-foreground" : ""
+                  }`}
+                >
+                  {message.message}
+                </p>
+              )}
+
+              {/* If there are attachments */}
+              {message.attachments && message.attachments.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  {message.attachments.map((file) => {
+                    const isImage = file.url.match(
+                      /\.(jpg|jpeg|png|gif|webp)$/i
+                    );
+
+                    return (
+                      <div
+                        key={file.id}
+                        className="rounded-md overflow-hidden border border-border"
+                      >
+                        {isImage ? (
+                          // 🖼️ Display image inline
+                          <img
+                            src={file.url}
+                            alt="Attachment"
+                            className="max-w-xs rounded-md object-cover cursor-pointer hover:opacity-90 transition"
+                            onClick={() => window.open(file.url, "_blank")}
+                          />
+                        ) : (
+                          // 📎 Display other files (PDF, DOC, ZIP, etc.)
+                          <a
+                            href={file.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 text-sm text-blue-600 underline p-2 hover:text-blue-800"
+                          >
+                            📎 {file.url.split("/").pop()}
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Message actions */}
             <div
@@ -209,8 +315,8 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
                   size="sm"
                   className="h-8 w-8 p-0 hover:bg-accent/10"
                   onClick={() => {
-                    onReaction(emoji)
-                    setShowReactions(false)
+                    onReaction(emoji);
+                    setShowReactions(false);
                   }}
                 >
                   {emoji}
@@ -242,12 +348,14 @@ export function ChatMessage({ message, isOwn, onPin, onHighlight, onReaction, on
           {/* Read status and timestamp for own messages */}
           {isOwn && (
             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
-              <span>{formatDistanceToNow(message.createdAt, { addSuffix: true })}</span>
+              <span>
+                {formatDistanceToNow(message.createdAt, { addSuffix: true })}
+              </span>
               {getReadStatus()}
             </div>
           )}
         </div>
       </div>
     </div>
-  )
+  );
 }
