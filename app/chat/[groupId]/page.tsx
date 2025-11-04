@@ -753,9 +753,9 @@ export default function ChatPage({
                     <Paperclip className="w-4 h-4" />
                   )}
                 </Button>
-                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                {/* <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                   <Smile className="w-4 h-4" />
-                </Button>
+                </Button> */}
                 {/* <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                   {" "}
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
