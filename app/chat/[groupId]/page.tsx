@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+
 import {
   Send,
   Paperclip,
@@ -31,7 +32,7 @@ import { useAuth } from "@/context/AuthContext"; // Updated import
 import domains from "@/app/data/domains"; // Updated import
 import Link from "next/link";
 import { SummaryAssistant } from "@/components/summary-assistant";
-
+import { uploadAttachment } from "@/lib/uploadAttachment";
 interface GroupData {
   id: string;
   name: string;
@@ -72,6 +73,9 @@ export default function ChatPage({
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -132,6 +136,57 @@ export default function ChatPage({
       });
     },
   });
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "File size exceeds 5 MB limit",
+          variant: "destructive",
+        });
+        e.target.value = ""; // reset input
+        return;
+      }
+
+      setIsUploading(true);
+      setUploadProgress(0);
+      console.log(user)
+      const uploadedFiles = await uploadAttachment(
+        file,
+        authToken!,
+        groupId,
+        user?.profile.id,
+        (percent) => setUploadProgress(percent)
+      );
+
+      if (uploadedFiles && uploadedFiles.length > 0) {
+        const uploaded = uploadedFiles[0];
+        await sendMessage(uploaded.url || uploaded.path || "[Attachment]");
+      }
+
+      toast({
+        title: "Upload complete",
+        description: "Your file has been uploaded successfully.",
+      });
+    } catch (err) {
+      console.error("Upload error:", err);
+      toast({
+        title: "Upload failed",
+        description:
+          err instanceof Error ? err.message : "Failed to upload attachment",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(null);
+      e.target.value = "";
+    }
+  };
+
   useEffect(() => {
     setTimeout(() => {
       setTypingUsers([]);
@@ -642,7 +697,7 @@ export default function ChatPage({
         <Card className="rounded-none border-x-0 border-b-0 backdrop-blur-sm bg-card/80">
           <CardContent className="p-4">
             <div className="flex items-end gap-3 max-w-4xl mx-auto">
-              <div className="flex-1 relative">
+              {/* <div className="flex-1 relative">
                 <Input
                   ref={inputRef}
                   value={newMessage}
@@ -663,7 +718,62 @@ export default function ChatPage({
                     <Smile className="w-4 h-4" />
                   </Button>
                 </div>
+              </div> */}
+              <div className="flex-1 relative">
+                {" "}
+                <Input
+                  ref={inputRef}
+                  value={newMessage}
+                  onChange={handleInputChange}
+                  onKeyPress={handleKeyPress}
+                  autoFocus
+                  placeholder={
+                    isConnected ? "Type your message..." : "Connecting..."
+                  }
+                  disabled={!isConnected || isSending}
+                  className="pr-20 min-h-[44px] resize-none"
+                />{" "}
+                <input
+                  type="file"
+                  accept="image/*,video/*"
+                  ref={fileInputRef}
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-accent" />
+                  ) : (
+                    <Paperclip className="w-4 h-4" />
+                  )}
+                </Button>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Smile className="w-4 h-4" />
+                </Button>
+                {/* <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                  {" "}
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    {" "}
+                    <Paperclip className="w-4 h-4" />{" "}
+                  </Button>{" "}
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                    {" "}
+                    <Smile className="w-4 h-4" />{" "}
+                  </Button>{" "}
+                </div> */}
               </div>
+              {isUploading && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Uploading... {uploadProgress ?? 0}%</span>
+                </div>
+              )}
               <Button
                 onClick={handleSendMessage}
                 disabled={!newMessage.trim() || !isConnected || isSending}
