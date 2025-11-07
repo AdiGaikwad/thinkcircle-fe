@@ -467,9 +467,38 @@ export default function DashboardPage() {
     }
   };
 
-  const joinGroup = async (groupId: string) => {
+  const selectJoinGroup = async (groupId: string) => {
     setRequestGrpModal(true);
-    
+    try {
+      const response = await fetch(
+        domains.AUTH_HOST +
+          `/api/v1/group/groups?groupId=${encodeURIComponent(
+            groupId
+          )}`,
+        {
+          method: "GET",
+
+          headers: {
+            Authorization: `${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setJoinGrpData(data.findgroups || []);
+      } else {
+        toast.error("Error", {
+          description: "Failed to find groups.",
+        });
+      }
+    } catch (error) {
+      console.error("Error finding groups:", error);
+      toast.error("Error", {
+        description: "Failed to find groups.",
+      });
+    }
     // try {
     //   setJoiningGroups((prev) => new Set(prev).add(groupId));
     //   const response = await fetch(
@@ -687,7 +716,6 @@ export default function DashboardPage() {
                     <Label htmlFor="maxSize" className="mb-1">
                       Maximum Members
                     </Label>
-                   
                   </div>
                   {/* <Button onClick={createGroup} className="w-full">
                     Create Group
@@ -816,7 +844,7 @@ export default function DashboardPage() {
                             </div>
                             <Button
                               size="sm"
-                              onClick={() => joinGroup(group.id)}
+                              onClick={() => selectJoinGroup(group.id)}
                               disabled={joiningGroups.has(group.id)}
                             >
                               {joiningGroups.has(group.id) ? (
