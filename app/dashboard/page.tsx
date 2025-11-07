@@ -149,6 +149,9 @@ export default function DashboardPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [apiLoading, setLoading] = useState(true);
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [requestGrpModal, setRequestGrpModal] = useState(false);
+  const [joinGrpData, setJoinGrpData] = useState<Group | null>(null);
+
   const [findGroupsOpen, setFindGroupsOpen] = useState(false);
   const [availableGroups, setAvailableGroups] = useState<Group[]>([]);
   const [notificationLoading, setNotificationLoading] = useState(false);
@@ -465,48 +468,48 @@ export default function DashboardPage() {
   };
 
   const joinGroup = async (groupId: string) => {
-    try {
-      setJoiningGroups((prev) => new Set(prev).add(groupId));
-
-      const response = await fetch(
-        domains.AUTH_HOST + `/api/v1/group/join/${groupId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            subjectFocus: searchSubject,
-          }),
-        }
-      );
-      const data = await response.json();
-
-      if (response.ok) {
-        toast("Success", {
-          description:
-            "Join request sent successfully! You'll be notified when the admin responds.",
-        });
-        findGroups();
-        refreshNotifications();
-      } else {
-        toast("Error", {
-          description: data.message || "Failed to send join request.",
-        });
-      }
-    } catch (error) {
-      console.error("Error joining group:", error);
-      toast.error("Error", {
-        description: "Failed to send join request.",
-      });
-    } finally {
-      setJoiningGroups((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(groupId);
-        return newSet;
-      });
-    }
+    setRequestGrpModal(true);
+    
+    // try {
+    //   setJoiningGroups((prev) => new Set(prev).add(groupId));
+    //   const response = await fetch(
+    //     domains.AUTH_HOST + `/api/v1/group/join/${groupId}`,
+    //     {
+    //       method: "POST",
+    //       headers: {
+    //         Authorization: `${token}`,
+    //         "Content-Type": "application/json",
+    //       },
+    //       body: JSON.stringify({
+    //         subjectFocus: searchSubject,
+    //       }),
+    //     }
+    //   );
+    //   const data = await response.json();
+    //   if (response.ok) {
+    //     toast("Success", {
+    //       description:
+    //         "Join request sent successfully! You'll be notified when the admin responds.",
+    //     });
+    //     findGroups();
+    //     refreshNotifications();
+    //   } else {
+    //     toast("Error", {
+    //       description: data.message || "Failed to send join request.",
+    //     });
+    //   }
+    // } catch (error) {
+    //   console.error("Error joining group:", error);
+    //   toast.error("Error", {
+    //     description: "Failed to send join request.",
+    //   });
+    // } finally {
+    //   setJoiningGroups((prev) => {
+    //     const newSet = new Set(prev);
+    //     newSet.delete(groupId);
+    //     return newSet;
+    //   });
+    // }
   };
 
   const markAsRead = async (notificationId: string) => {
@@ -657,6 +660,67 @@ export default function DashboardPage() {
                       onChange={(e) => setNewGroupName(e.target.value)}
                       placeholder="e.g., Advanced Calculus Study Group"
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="description" className="mb-1">
+                      Group Description
+                    </Label>
+                    <Textarea
+                      id="description"
+                      value={newGroupDescription}
+                      onChange={(e) => setNewGroupDescription(e.target.value)}
+                      placeholder="e.g., This is an awesome group"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="subject" className="mb-1">
+                      Subject Focus
+                    </Label>
+                    <Input
+                      id="subject"
+                      value={newGroupSubject}
+                      onChange={(e) => setNewGroupSubject(e.target.value)}
+                      placeholder="e.g., Mathematics, Chemistry, Computer Science"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="maxSize" className="mb-1">
+                      Maximum Members
+                    </Label>
+                   
+                  </div>
+                  {/* <Button onClick={createGroup} className="w-full">
+                    Create Group
+                  </Button> */}
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={requestGrpModal} onOpenChange={setRequestGrpModal}>
+              <DialogTrigger asChild>
+                <Button className="flex items-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  Join Group
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle></DialogTitle>
+                  <DialogDescription>
+                    Create a new study group and invite others to join
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="groupName" className="mb-1">
+                      Group Name
+                    </Label>
+                    {/* <Input
+                      id="groupName"
+                      value={newGroupName}
+                      onChange={(e) => setNewGroupName(e.target.value)}
+                      placeholder="e.g., Advanced Calculus Study Group"
+                    /> */}
                   </div>
                   <div>
                     <Label htmlFor="description" className="mb-1">
@@ -905,7 +969,6 @@ export default function DashboardPage() {
                       key={group.id}
                       className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border"
                     >
-                      {console.log(group)}
                       <div>
                         <h4 className="font-medium">
                           {group.group?.name || group.name}
