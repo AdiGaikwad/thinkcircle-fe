@@ -1,5 +1,16 @@
 Project Link :(https://thinkcircle.dhupkar.in/)
+⚠️ Important Notice (Delay)
 
+This project is currently connected to a free-tier PostgreSQL database, which may enter a sleep mode when not in use.
+Because of this, the first login or API request may take up to 3–5 minutes to wake the database.
+
+If the page seems to be loading slowly after opening the app:
+
+Please wait for 3–5 minutes.
+
+Do not refresh repeatedly — the database will resume automatically.
+
+Once the database wakes up, all further navigation and login actions will be fast.
 Project Description :
 ThinkCircle
 
@@ -71,6 +82,7 @@ Dashboard Page:
 <img width="1905" height="937" alt="image" src="https://github.com/user-attachments/assets/12377c55-306b-4599-a12e-032ae364b263" />
 chat app:
 <img width="1912" height="907" alt="image" src="https://github.com/user-attachments/assets/dbd3fc9c-3d36-4a20-9479-0751d9870308" />
+<img width="1914" height="942" alt="image" src="https://github.com/user-attachments/assets/5cd8afbe-d529-4e27-9599-cb8705048dd3" />
 
 
 
