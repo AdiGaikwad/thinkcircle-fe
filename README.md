@@ -1,5 +1,8 @@
 Project Link :(https://thinkcircle.dhupkar.in/)
 
+Backened URL:https://github.com/gurudhupkar/thinkcircle-be
+
+Frontend URL :https://github.com/adigaikwad/thinkcircle-fe
 
 ⚠️ Important Notice (Delay)
 
@@ -13,6 +16,10 @@ Please wait for 3–5 minutes.
 Do not refresh repeatedly — the database will resume automatically.
 
 Once the database wakes up, all further navigation and login actions will be fast.
+
+
+
+
 Project Description :
 ThinkCircle
 
